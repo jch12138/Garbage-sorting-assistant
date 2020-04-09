@@ -11,8 +11,7 @@
         "tjpgd.h": "c",
         "app_demo_softap.h": "c",
         "video_transfer.h": "c",
-        "webclient.h": "c",
-        "dfs.h": "c"
+        "webclient.h": "c"
     },
     "MicroPython.executeButton": [
         {

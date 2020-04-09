@@ -42,7 +42,7 @@
 #define RT_USING_DEVICE_OPS
 #define RT_USING_CONSOLE
 #define RT_CONSOLEBUF_SIZE 128
-#define RT_CONSOLE_DEVICE_NAME "uart2"
+#define RT_CONSOLE_DEVICE_NAME "uart1"
 
 /* RT-Thread Components */
 
@@ -63,7 +63,7 @@
 #define FINSH_USING_DESCRIPTION
 #define FINSH_THREAD_PRIORITY 20
 #define FINSH_THREAD_STACK_SIZE 8192
-#define FINSH_CMD_SIZE 80
+#define FINSH_CMD_SIZE 256
 #define FINSH_USING_MSH
 #define FINSH_USING_MSH_DEFAULT
 #define FINSH_USING_MSH_ONLY
@@ -93,11 +93,12 @@
 #define RT_USING_DFS_ROMFS
 
 /* Device Drivers */
-
+//#define BEKEN_USING_IIC
 #define RT_USING_DEVICE_IPC
 #define RT_USING_SERIAL
 #define RT_USING_I2C
-#define RT_USING_I2C_BITOPS
+#define RT_USING_I2C2
+//#define RT_USING_I2C_BITOPS
 #define RT_USING_PIN
 #define RT_USING_RTC
 #define RT_USING_SOFT_RTC
@@ -111,6 +112,8 @@
 #define WIFI_DEVICE_STA_NAME "w0"
 #define WIFI_DEVICE_AP_NAME "ap"
 #define RT_USING_AUDIO
+#define RT_USING_SPI
+#define RT_USING_I2S
 
 /* Using USB */
 
@@ -144,7 +147,7 @@
 #define RT_MEMP_NUM_NETCONN 12
 #define RT_LWIP_PBUF_NUM 3
 #define RT_LWIP_RAW_PCB_NUM 2
-#define RT_LWIP_UDP_PCB_NUM 4
+#define RT_LWIP_UDP_PCB_NUM 6
 #define RT_LWIP_TCP_PCB_NUM 8
 #define RT_LWIP_TCP_SEG_NUM 40
 #define RT_LWIP_TCP_SND_BUF 4380
@@ -163,6 +166,9 @@
 #define LWIP_SO_SNDTIMEO 1
 #define LWIP_SO_RCVBUF 1
 #define LWIP_NETIF_LOOPBACK 0
+
+/* Modbus master and slave stack */
+
 #define LWIP_USING_DHCPD
 #define DHCPD_SERVER_IP "192.168.169.1"
 #define DHCPD_USING_ROUTER
@@ -185,10 +191,33 @@
 #define MQTT_DEBUG
 #define PKG_USING_PAHOMQTT_LATEST
 #define PKG_USING_WEBCLIENT
-#define WEBCLIENT_NOT_USE_TLS
+#define WEBCLIENT_HEADER_BUFSZ 4096
+#define WEBCLIENT_RESPONSE_BUFSZ 4096
 #define PKG_USING_WEBCLIENT_LATEST_VERSION
 #define PKG_USING_CJSON
 #define PKG_USING_CJSON_V102
+
+#define PKG_USING_WEBCLIENT
+#define WEBCLIENT_HEADER_BUFSZ 4096
+#define WEBCLIENT_RESPONSE_BUFSZ 4096
+#define PKG_USING_WEBCLIENT_LATEST_VERSION
+#define PKG_USING_WEBNET
+#define WEBNET_PORT 80
+#define WEBNET_CONN_MAX 16
+#define WEBNET_ROOT "/"
+
+/* Select supported modules */
+#define WEBNET_USING_LOG
+#define WEBNET_USING_AUTH
+#define WEBNET_USING_CGI
+#define WEBNET_USING_ASP
+#define WEBNET_USING_SSI
+#define WEBNET_USING_INDEX
+#define WEBNET_USING_ALIAS
+#define WEBNET_USING_UPLOAD
+#define WEBNET_CACHE_LEVEL 0
+#define WEBNET_USING_SAMPLES
+#define PKG_USING_WEBNET_V201
 
 /* Wi-Fi */
 
@@ -203,25 +232,12 @@
 #define PKG_NETUTILS_NTP
 #define NETUTILS_NTP_TIMEZONE 8
 #define NETUTILS_NTP_HOSTNAME "cn.ntp.org.cn"
-#define NETUTILS_NTP_HOSTNAME2 "ntp.rt-thread.org"
-#define NETUTILS_NTP_HOSTNAME3 "edu.ntp.org.cn"
 #define PKG_USING_NETUTILS_LATEST_VERSION
 
 /* IoT Cloud */
 
 
 /* security packages */
-
-#define PKG_USING_MBEDTLS
-
-/* Select Root Certificate */
-
-#define PKG_USING_MBEDTLS_DIGICERT_ROOT_CA
-#define MBEDTLS_AES_ROM_TABLES
-#define MBEDTLS_ECP_WINDOW_SIZE 2
-#define MBEDTLS_SSL_MAX_CONTENT_LEN 3584
-#define PKG_USING_MBEDTLS_EXAMPLE
-#define PKG_USING_MBEDTLS_LATEST_VERSION
 
 /* language packages */
 
@@ -233,28 +249,51 @@
 
 
 /* system packages */
+#define CONFIG_SOUND_MIXER                   0
 
 #define PKG_USING_FAL
 #define FAL_DEBUG_CONFIG
 #define FAL_DEBUG 1
-#define FAL_PART_HAS_TABLE_CFG
 #define PKG_USING_FAL_LATEST_VERSION
-#define PKG_FAL_VER_NUM 0x99999
+#define FAL_PART_TABLE_END_OFFSET (60 * 1024UL) //speed up if need change to 64k
+#define FAL_PART_TABLE_FLASH_DEV_NAME "beken_onchip_crc"
 
 /* peripheral libraries and drivers */
 
 
 /* miscellaneous packages */
 
+#define PKG_USING_MULTIBUTTON
+#define PKG_USING_MULTIBUTTON_V102
 #define PKG_USING_ZLIB
-#define PKG_USING_ZLIB_V100
 
-/* samples: kernel and components samples */
+/* MultiButton Options */
+
+
+/* sample package */
+
+
+/* example package: hello */
+
+
+/* Privated Packages of RealThread */
+
+
+/* Network Utilities */
+
+
+/* RT-Thread Senior Membership Packages */
+
+/* system packages */
+
+
+/* IoT - internet of things */
+
+/* Webnet: A web server package for rt-thread */
 
 
 /* Hardware Drivers Config */
-
-#define BEKEN_USING_UART2
+#define BEKEN_USING_UART1
 #define BEKEN_USING_WDT
 #define BEKEN_USING_FLASH
 #define BEKEN_USING_PWM
@@ -263,6 +302,9 @@
 #define LWIP_NETIF_HOSTNAME 1
 #define BEKEN_USING_WLAN_STA
 #define RT_USING_CPU_FFS
+//#define BEKEN_USING_SPI_FLASH
+//#define BEKEN_USING_SPI_PSRAM
+//#define BEKEN_USING_SPI_HSLAVE
 
 /* Application Samples Config */
 
@@ -280,4 +322,49 @@
 
 #define PKG_USING_RT_OTA
 
+#define RT_USING_PTHREADS
+
+/* voice changer */
+#define CONFIG_VOICE_CHANGER        0
+
+/* tools packages */
+#define PKG_USING_EASYFLASH
+
+/* optparse */
+#define PKG_USING_OPTPARSE
+
+/* PLAYER 1.2.7 ************************************************************************** */ 
+#define PKG_USING_PLAYER
+#define PKG_USING_PLAYER_V127
+#define PLAYER_ENABLE_NET_STREAM
+
+/* PLAYER Example */
+#define PLAYER_USING_EXAMPLE00
+#define PLAYER_USING_EXAMPLE02
+/* PLAYER END **************************************************************************** */ 
+
+
+#define PKG_USING_MULTIBUTTON
+//#define MULTIBUTTON_USING_EXAMPLE_ASYNC
+
+// #define PKG_USING_LITTLEFS
+// #define RT_USING_MTD_NOR
+#define PKG_USING_WEBNET
+#define RT_USING_LWIP
+//#define PKG_USING_LSSDP
+//#define LSSDP_USING_SAMPLES
+//#define RT_USING_LSSDP_TEST
+#define RT_USING_LCD_TEST
+#define PKG_USING_TJPGD
+#define TJPGD_INPUT_BUFFER_SIZE 512
+#define TJPGD_USING_FORMAT_RGB565
+#define TJPGD_USING_SCALE
+#define TJPGD_USING_TBLCLIP
+#define PKG_TJPGD_SAMPLE
+#define PKG_USING_TJPGD_LATEST_VERSION
+#define QSPI_TEST
+#define TEST_DEEP_SLEEP
+//#define PKG_USING_QRCODE
+#define PKG_USING_LITTLEFS
+#define RT_USING_MTD_NOR
 #endif
