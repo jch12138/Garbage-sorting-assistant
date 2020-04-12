@@ -13,7 +13,10 @@
         "video_transfer.h": "c",
         "webclient.h": "c",
         "rtthread.h": "c",
-        "player.h": "c"
+        "player.h": "c",
+        "usermain.h": "c",
+        "rtdebug.h": "c",
+        "wlan_dev.h": "c"
     },
     "MicroPython.executeButton": [
         {
