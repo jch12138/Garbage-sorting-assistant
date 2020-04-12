@@ -46,6 +46,8 @@
 #include "drv_flash.h"
 #endif /* PKG_USING_LITTLEFS */
 
+#include "usermain.h"
+
 static int wlan_app_init(void);
 
 extern const struct romfs_dirent romfs_root;
@@ -187,7 +189,7 @@ static int wlan_app_init(void)
 		rt_kprintf("Enter normal mode...\r\n\r\n");
 		app_start();
 
-		//user_app_start();
+		user_app_start();
 	}
 
 	return 0;

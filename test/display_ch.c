@@ -1,32 +1,32 @@
 #include <rtthread.h>
 #include <rtdevice.h>
-//Ìí¼ÓÎÄ¼ş²Ù×÷Ê¹ÓÃĞèÒªµÄÍ·ÎÄ¼ş
+//æ·»åŠ æ–‡ä»¶æ“ä½œä½¿ç”¨éœ€è¦çš„å¤´æ–‡ä»¶
 #include <dfs_posix.h>
-//Ìí¼Ó lcd ÏÔÊ¾Ê¹ÓÃµÄÍ·ÎÄ¼ş
+//æ·»åŠ  lcd æ˜¾ç¤ºä½¿ç”¨çš„å¤´æ–‡ä»¶
 #include "drv_lcd.h"
 #include "ascii.h"
 
 #if defined RT_USING_LCD_TEST
-#define macWIDTH_EN_CHAR 8   //Ó¢ÎÄ×Ö·û¿í¶È
-#define macHEIGHT_EN_CHAR 16 //Ó¢ÎÄ×Ö·û¸ß¶È
+#define macWIDTH_EN_CHAR 8   //è‹±æ–‡å­—ç¬¦å®½åº¦
+#define macHEIGHT_EN_CHAR 16 //è‹±æ–‡å­—ç¬¦é«˜åº¦
 
-#define macWIDTH_CH_CHAR 16  //ÖĞÎÄ×Ö·û¿í¶È
-#define macHEIGHT_CH_CHAR 16 //ÖĞÎÄ×Ö·û¸ß¶È
+#define macWIDTH_CH_CHAR 16  //ä¸­æ–‡å­—ç¬¦å®½åº¦
+#define macHEIGHT_CH_CHAR 16 //ä¸­æ–‡å­—ç¬¦é«˜åº¦
 
-#define mac_DispWindow_X_Star 0 //  ÆğÊ¼µãµÄ X ×ø±ê
-#define mac_DispWindow_Y_Star 0 //  ÆğÊ¼µãµÄ Y ×ø±ê
+#define mac_DispWindow_X_Star 0 //  èµ·å§‹ç‚¹çš„ X åæ ‡
+#define mac_DispWindow_Y_Star 0 //  èµ·å§‹ç‚¹çš„ Y åæ ‡
 
-#define mac_DispWindow_COLUMN 240                   // ×ÜÁĞÊı
-#define mac_DispWindow_PAGE 240                     //×ÜĞĞÊı
-static const char *file_location = "/sd/HZLIB.bin"; //×Ö¿âÎÄ¼şµÄÂ·¾¶
+#define mac_DispWindow_COLUMN 240                   // æ€»åˆ—æ•°
+#define mac_DispWindow_PAGE 240                     //æ€»è¡Œæ•°
+static const char *file_location = "/sd/HZLIB.bin"; //å­—åº“æ–‡ä»¶çš„è·¯å¾„
 /**
- *  LCD ÉÏÏÔÊ¾Ó¢ÎÄ×Ö·û
- * usX : ÔÚÌØ¶¨É¨ÃèµÄ·½ÏòÏÂ×Ö·ûµÄÆğÊ¼ X ×ø±ê
- * usY : ÔÚÌØ¶¨É¨ÃèµÄ·½ÏòÏÂ×Ö·ûµÄÆğÊ¼ Y ×ø±ê
- * cChar : ÒªÏÔÊ¾µÄÓ¢ÎÄ×Ö·û
- * usColor_Background : Ñ¡ÔñÓ¢ÎÄ×Ö·ûµÄ±³¾°É«
- * usColor_Foreground : Ñ¡ÔñÓ¢ÎÄ×Ö·ûµÄÇ°¾°É«
- * ·µ»ØÖµ £º ÎŞ
+ *  LCD ä¸Šæ˜¾ç¤ºè‹±æ–‡å­—ç¬¦
+ * usX : åœ¨ç‰¹å®šæ‰«æçš„æ–¹å‘ä¸‹å­—ç¬¦çš„èµ·å§‹ X åæ ‡
+ * usY : åœ¨ç‰¹å®šæ‰«æçš„æ–¹å‘ä¸‹å­—ç¬¦çš„èµ·å§‹ Y åæ ‡
+ * cChar : è¦æ˜¾ç¤ºçš„è‹±æ–‡å­—ç¬¦
+ * usColor_Background : é€‰æ‹©è‹±æ–‡å­—ç¬¦çš„èƒŒæ™¯è‰²
+ * usColor_Foreground : é€‰æ‹©è‹±æ–‡å­—ç¬¦çš„å‰æ™¯è‰²
+ * è¿”å›å€¼ ï¼š æ— 
  */
 void lcd_disp_char_en(uint16_t usX, uint16_t usY, const char cChar, uint16_t usColor_Background, uint16_t usColor_Foreground)
 {
@@ -52,19 +52,19 @@ void lcd_disp_char_en(uint16_t usX, uint16_t usY, const char cChar, uint16_t usC
             }
             ucTemp >>= 1;
 
-        } /*Ğ´ÍêÒ»ĞĞ */
+        } /*å†™å®Œä¸€è¡Œ */
     }
-    /*È«²¿Ğ´Íê */
+    /*å…¨éƒ¨å†™å®Œ */
 }
 
 /**
- * ÔÚ LCD ÉÏÏÔÊ¾Ó¢ÎÄ×Ö·û´®
- * usX : ÔÚÌØ¶¨É¨Ãè·½ÏòÏÂ×Ö·û´®µÄÆğÊ¼ X ×ø±ê
- * usY : ÔÚÌØ¶¨É¨Ãè·½ÏòÏÂ×Ö·û´®µÄÆğÊ¼ Y ×ø±ê
- * pStr : ÒªÏÔÊ¾µÄÓ¢ÎÄ×Ö·û´®µÄÊ×µØÖ·
- * usColor_Background : Ñ¡ÔñÓ¢ÎÄ×Ö·û´®µÄ±³¾°É«
- * usColor_Foreground : Ñ¡ÔñÓ¢ÎÄ×Ö·û´®µÄÇ°¾°É«
- * ·µ»ØÖµ : ÎŞ
+ * åœ¨ LCD ä¸Šæ˜¾ç¤ºè‹±æ–‡å­—ç¬¦ä¸²
+ * usX : åœ¨ç‰¹å®šæ‰«ææ–¹å‘ä¸‹å­—ç¬¦ä¸²çš„èµ·å§‹ X åæ ‡
+ * usY : åœ¨ç‰¹å®šæ‰«ææ–¹å‘ä¸‹å­—ç¬¦ä¸²çš„èµ·å§‹ Y åæ ‡
+ * pStr : è¦æ˜¾ç¤ºçš„è‹±æ–‡å­—ç¬¦ä¸²çš„é¦–åœ°å€
+ * usColor_Background : é€‰æ‹©è‹±æ–‡å­—ç¬¦ä¸²çš„èƒŒæ™¯è‰²
+ * usColor_Foreground : é€‰æ‹©è‹±æ–‡å­—ç¬¦ä¸²çš„å‰æ™¯è‰²
+ * è¿”å›å€¼ : æ— 
  */
 
 void lcd_disp_str_en(uint16_t usX, uint16_t usY, const char *pStr, uint16_t usColor_Background, uint16_t usColor_Foreground)
@@ -90,9 +90,9 @@ void lcd_disp_str_en(uint16_t usX, uint16_t usY, const char *pStr, uint16_t usCo
 }
 
 /**
- * ´Ó SD ¿¨ÖĞ»ñÈ¡ÖĞÎÄ×Ö¿â
- * *pBuffer : Êı¾İÖ¸Õë 
- * c : ¶ÁÈ¡µÄ×Ö·û
+ * ä» SD å¡ä¸­è·å–ä¸­æ–‡å­—åº“
+ * *pBuffer : æ•°æ®æŒ‡é’ˆ 
+ * c : è¯»å–çš„å­—ç¬¦
  */
 
 int GetGBKCode_from_sd(uint8_t *pBuffer, uint16_t c)
@@ -102,19 +102,19 @@ int GetGBKCode_from_sd(uint8_t *pBuffer, uint16_t c)
     int fd, size, ret;
     int result = 0;
 
-    Hight8bit = c >> 8;   /* È¡¸ß8Î»Êı¾İ */
-    Low8bit = c & 0x00FF; /* È¡µÍ8Î»Êı¾İ */
+    Hight8bit = c >> 8;   /* å–é«˜8ä½æ•°æ® */
+    Low8bit = c & 0x00FF; /* å–ä½8ä½æ•°æ® */
 
     //rt_kprintf("%d,%d\r\n",Hight8bit,Low8bit);
     //rt_kprintf("%x,%x\r\n",Hight8bit,Low8bit);
 
     pos = ((Hight8bit - 0xa0 - 16) * 94 + Low8bit - 0xa0 - 1) * 2 * 16;
 
-    /* ÒÔÖ»¶ÁÄ£Ê½´ò¿ª ×Ö¿âÎÄ¼ş */
+    /* ä»¥åªè¯»æ¨¡å¼æ‰“å¼€ å­—åº“æ–‡ä»¶ */
     fd = open(file_location, O_RDONLY);
     if (fd >= 0)
     {
-        //ÒÆ¶¯Ö¸Õë
+        //ç§»åŠ¨æŒ‡é’ˆ
         ret = lseek(fd, pos, 0);
         //rt_kprintf("lseek  = %d \n",ret);
         size = read(fd, pBuffer, 32);
@@ -135,12 +135,12 @@ int GetGBKCode_from_sd(uint8_t *pBuffer, uint16_t c)
 }
 
 /**
- * ÔÚ lcd ÉÏÏÔÊ¾ÖĞÎÄ×Ö·û
- * x : ÔÚÌØ¶¨É¨Ãè·½ÏòÏÂ×Ö·û´®µÄÆğÊ¼ X ×ø±ê
- * y : ÔÚÌØ¶¨É¨Ãè·½ÏòÏÂ×Ö·û´®µÄÆğÊ¼ Y ×ø±ê
- * usChar : ÒªÏÔÊ¾µÄ×Ö·û
- * usColor_Background : Ñ¡Ôñ×Ö·û´®µÄ±³¾°É«
- * usColor_Foreground : Ñ¡Ôñ×Ö·û´®µÄÇ°¾°É«
+ * åœ¨ lcd ä¸Šæ˜¾ç¤ºä¸­æ–‡å­—ç¬¦
+ * x : åœ¨ç‰¹å®šæ‰«ææ–¹å‘ä¸‹å­—ç¬¦ä¸²çš„èµ·å§‹ X åæ ‡
+ * y : åœ¨ç‰¹å®šæ‰«ææ–¹å‘ä¸‹å­—ç¬¦ä¸²çš„èµ·å§‹ Y åæ ‡
+ * usChar : è¦æ˜¾ç¤ºçš„å­—ç¬¦
+ * usColor_Background : é€‰æ‹©å­—ç¬¦ä¸²çš„èƒŒæ™¯è‰²
+ * usColor_Foreground : é€‰æ‹©å­—ç¬¦ä¸²çš„å‰æ™¯è‰²
  * 
  */
 void lcd_disp_char_ch(uint16_t x, uint16_t y, uint16_t usChar, uint16_t usColor_Background, uint16_t usColor_Foreground)
@@ -150,18 +150,18 @@ void lcd_disp_char_ch(uint16_t x, uint16_t y, uint16_t usChar, uint16_t usColor_
     uint16_t us_Temp;
 
     lcd_open_window(x, y, macWIDTH_CH_CHAR, macHEIGHT_CH_CHAR);
-    GetGBKCode_from_sd(ucBuffer, usChar); //È¡×ÖÄ£Êı¾İ
+    GetGBKCode_from_sd(ucBuffer, usChar); //å–å­—æ¨¡æ•°æ®
 
     for (ucPage = 0; ucPage < macHEIGHT_CH_CHAR; ucPage++)
     {
-        //È¡³öÁ½¸ö×Ö½ÚµÄÊı¾İ£¬ÔÚ LCD ÉÏ¼´ÊÇÒ»¸öºº×ÖµÄÒ»ĞĞ
+        //å–å‡ºä¸¤ä¸ªå­—èŠ‚çš„æ•°æ®ï¼Œåœ¨ LCD ä¸Šå³æ˜¯ä¸€ä¸ªæ±‰å­—çš„ä¸€è¡Œ
         us_Temp = ucBuffer[ucPage * 2];
         us_Temp = (us_Temp << 8);
         us_Temp |= ucBuffer[ucPage * 2 + 1];
 
         for (ucColum = 0; ucColum < macWIDTH_CH_CHAR; ucColum++)
         {
-            if (us_Temp & (0x01 << 15)) //¸ßÎ»ÔÚÇ°
+            if (us_Temp & (0x01 << 15)) //é«˜ä½åœ¨å‰
             {
                 lcd_write_half_word(usColor_Foreground);
             }
@@ -175,12 +175,12 @@ void lcd_disp_char_ch(uint16_t x, uint16_t y, uint16_t usChar, uint16_t usColor_
 }
 
 /*
- * LCD ÏÔÊ¾ÖĞÎÄ×Ö·û´®
- * usX : ÔÚÌØ¶¨É¨Ãè·½ÏòÏÂ×Ö·û´®µÄÆğÊ¼ X ×ø±ê
- * usY : ÔÚÌØ¶¨É¨Ãè·½ÏòÏÂ×Ö·û´®µÄÆğÊ¼ Y ×ø±ê
- * pStr : ÒªÏÔÊ¾µÄ×Ö·û´®Ê×µØÖ·
- * usColor_Background : Ñ¡Ôñ×Ö·û´®µÄ±³¾°É«
- * usColor_Foreground : Ñ¡Ôñ×Ö·û´®µÄÇ°¾°É«
+ * LCD æ˜¾ç¤ºä¸­æ–‡å­—ç¬¦ä¸²
+ * usX : åœ¨ç‰¹å®šæ‰«ææ–¹å‘ä¸‹å­—ç¬¦ä¸²çš„èµ·å§‹ X åæ ‡
+ * usY : åœ¨ç‰¹å®šæ‰«ææ–¹å‘ä¸‹å­—ç¬¦ä¸²çš„èµ·å§‹ Y åæ ‡
+ * pStr : è¦æ˜¾ç¤ºçš„å­—ç¬¦ä¸²é¦–åœ°å€
+ * usColor_Background : é€‰æ‹©å­—ç¬¦ä¸²çš„èƒŒæ™¯è‰²
+ * usColor_Foreground : é€‰æ‹©å­—ç¬¦ä¸²çš„å‰æ™¯è‰²
  */
 void lcd_disp_str_ch(uint16_t usX, uint16_t usY, const uint8_t *pStr, uint16_t usColor_Background, uint16_t usColor_Foreground)
 {
@@ -210,17 +210,17 @@ void lcd_disp_str_ch(uint16_t usX, uint16_t usY, const uint8_t *pStr, uint16_t u
 
         lcd_disp_char_ch(usX, usY, usCh_temp, usColor_Background, usColor_Foreground);
         usX += macWIDTH_CH_CHAR;
-        pStr += 2; //Ò»¸öºº×ÖÁ½¸ö×Ö½Ú
+        pStr += 2; //ä¸€ä¸ªæ±‰å­—ä¸¤ä¸ªå­—èŠ‚
     }
 }
 
 /**
- * ÏÔÊ¾ÖĞÓ¢ÎÄ×Ö·û´®
- * usX : ÔÚÌØ¶¨É¨Ãè·½ÏòÏÂ×Ö·û´®µÄÆğÊ¼ X ×ø±ê
- * usY : ÔÚÌØ¶¨É¨Ãè·½ÏòÏÂ×Ö·û´®µÄÆğÊ¼ Y ×ø±ê
- * pStr : ÒªÏÔÊ¾µÄ×Ö·û´®Ê×µØÖ·
- * usColor_Background : Ñ¡Ôñ×Ö·û´®µÄ±³¾°É«
- * usColor_Foreground : Ñ¡Ôñ×Ö·û´®µÄÇ°¾°É«
+ * æ˜¾ç¤ºä¸­è‹±æ–‡å­—ç¬¦ä¸²
+ * usX : åœ¨ç‰¹å®šæ‰«ææ–¹å‘ä¸‹å­—ç¬¦ä¸²çš„èµ·å§‹ X åæ ‡
+ * usY : åœ¨ç‰¹å®šæ‰«ææ–¹å‘ä¸‹å­—ç¬¦ä¸²çš„èµ·å§‹ Y åæ ‡
+ * pStr : è¦æ˜¾ç¤ºçš„å­—ç¬¦ä¸²é¦–åœ°å€
+ * usColor_Background : é€‰æ‹©å­—ç¬¦ä¸²çš„èƒŒæ™¯è‰²
+ * usColor_Foreground : é€‰æ‹©å­—ç¬¦ä¸²çš„å‰æ™¯è‰²
  * 
  * 
 */
@@ -232,7 +232,7 @@ void lcd_disp_str_en_ch(uint16_t usX, uint16_t usY, const uint8_t *pStr, uint16_
     rt_uint16_t usCh_temp = 0xffff;
     while (*pStr != '\0')
     {
-        if (*pStr <= 126) //Ó¢ÎÄ×Ö·û
+        if (*pStr <= 126) //è‹±æ–‡å­—ç¬¦
         {
             if ((usX - mac_DispWindow_X_Star + macWIDTH_EN_CHAR) > mac_DispWindow_COLUMN)
             {
@@ -274,7 +274,7 @@ void lcd_disp_str_en_ch(uint16_t usX, uint16_t usY, const uint8_t *pStr, uint16_
 
             lcd_disp_char_ch(usX, usY, usCh_temp, usColor_Background, usColor_Foreground);
             usX += macWIDTH_CH_CHAR;
-            pStr += 2; //Ò»¸öºº×ÖÁ½¸ö×Ö½Ú
+            pStr += 2; //ä¸€ä¸ªæ±‰å­—ä¸¤ä¸ªå­—èŠ‚
         }
     }
 }
@@ -282,13 +282,13 @@ void lcd_disp_str_en_ch(uint16_t usX, uint16_t usY, const uint8_t *pStr, uint16_
 int test_lcd_ch(int argc, char *argv[])
 {
     rt_err_t ret = RT_EOK;
-    lcd_disp_str_ch(0, 50, "Ğ¡¶øÃÀµÄ", WHITE, BLUE);
-    lcd_disp_str_ch(0, 100, "ÎïÁªÍø²Ù×÷ÏµÍ³", BLACK, BLUE);
-    lcd_disp_str_ch(0, 150, "Ğ¡¶øÃÀµÄÎïÁªÍø²Ù×÷ÏµÍ³", GREEN, BLUE);
-    lcd_disp_str_ch(100, 200, "Ò»¶şÈıËÄÎåÁùÆß°Ë¾ÅÊ®", BLACK, WHITE);
-    lcd_disp_str_ch(0, 0, "ÂéÈ¸ËäĞ¡ÎåÔà¾ãÈ«", RED, BLUE);
+    lcd_disp_str_ch(0, 50, "å°è€Œç¾çš„", WHITE, BLUE);
+    lcd_disp_str_ch(0, 100, "ç‰©è”ç½‘æ“ä½œç³»ç»Ÿ", BLACK, BLUE);
+    lcd_disp_str_ch(0, 150, "å°è€Œç¾çš„ç‰©è”ç½‘æ“ä½œç³»ç»Ÿ", GREEN, BLUE);
+    lcd_disp_str_ch(100, 200, "ä¸€äºŒä¸‰å››äº”å…­ä¸ƒå…«ä¹å", BLACK, WHITE);
+    lcd_disp_str_ch(0, 0, "éº»é›€è™½å°äº”è„ä¿±å…¨", RED, BLUE);
     lcd_disp_str_en(0, 20, "Hello, World!!!--RT-Thread...", WHITE, BLACK);
-    lcd_disp_str_en_ch(0, 170, "Hello,ÄãºÃ,Ğ¡¶øÃÀµÄÎïÁªÍø²Ù×÷ÏµÍ³.", WHITE, BLACK);
+    lcd_disp_str_en_ch(0, 170, "Hello,ä½ å¥½,å°è€Œç¾çš„ç‰©è”ç½‘æ“ä½œç³»ç»Ÿ.", WHITE, BLACK);
 
     return ret;
 }

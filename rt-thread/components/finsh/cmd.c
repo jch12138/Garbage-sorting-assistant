@@ -57,6 +57,15 @@ long hello(void)
 }
 FINSH_FUNCTION_EXPORT(hello, say hello world);
 
+long clear(void)
+{
+    rt_kprintf("\x1b[2J\x1b[H");
+
+    return 0;
+}
+FINSH_FUNCTION_EXPORT(clear,clear the terminal screen);
+MSH_CMD_EXPORT(clear,clear the terminal screen);
+
 extern void rt_show_version(void);
 long version(void)
 {

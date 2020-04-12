@@ -187,7 +187,8 @@
                 "D:/RT-Thread-Contest/Garbage-sorting-assistant/samples/ota/http",
                 "D:/RT-Thread-Contest/Garbage-sorting-assistant/samples/ota/port",
                 "D:/RT-Thread-Contest/Garbage-sorting-assistant/samples/peripheral/gpio",
-                "D:/RT-Thread-Contest/Garbage-sorting-assistant/t"
+                "D:/RT-Thread-Contest/Garbage-sorting-assistant/t",
+                "D:/RT-Thread-Contest/Garbage-sorting-assistant/**"
             ],
             "defines": [
                 "CFG_SUPPORT_RTT",

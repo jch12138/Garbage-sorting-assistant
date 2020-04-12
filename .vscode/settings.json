@@ -1,17 +1,19 @@
 {
     "python.autoComplete.extraPaths": [
-        "C:/Users/liuguang/.vscode/extensions/rt-thread.rt-thread-micropython-0.2.7/microExamples/code-completion"
+        "c:/Users/10994/.vscode/extensions/rt-thread.rt-thread-micropython-1.0.7/microExamples/code-completion"
     ],
     "python.linting.pylintArgs": [
         "--init-hook",
-        "import sys; sys.path.append('C:/Users/liuguang/.vscode/extensions/rt-thread.rt-thread-micropython-0.2.7/microExamples/code-completion')"
+        "import sys; sys.path.append('c:/Users/10994/.vscode/extensions/rt-thread.rt-thread-micropython-1.0.7/microExamples/code-completion')"
     ],
     "files.associations": {
         "dfs_posix.h": "c",
         "tjpgd.h": "c",
         "app_demo_softap.h": "c",
         "video_transfer.h": "c",
-        "webclient.h": "c"
+        "webclient.h": "c",
+        "rtthread.h": "c",
+        "player.h": "c"
     },
     "MicroPython.executeButton": [
         {
