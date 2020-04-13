@@ -76,7 +76,18 @@ int main(int argc, char **argv)
         rt_kprintf("SD File System initialized!\n");
     else
         rt_kprintf("SD File System initialzation failed!\n");
+
 #endif
+    // if (dfs_mount(RT_NULL, "/", "ram", 0, dfs_ramfs_create(rt_malloc(1024),4096)) == 0)
+    // {
+    //     rt_kprintf("RAM file system initializated!\n");
+    // }
+    // else
+    // {
+    //     rt_kprintf("RAM file system initializate failed!\n");
+    // }
+
+
 
 #if 0
     const struct fal_partition *dl_part = RT_NULL;

@@ -62,7 +62,7 @@
 #define FINSH_USING_SYMTAB
 #define FINSH_USING_DESCRIPTION
 #define FINSH_THREAD_PRIORITY 20
-#define FINSH_THREAD_STACK_SIZE 8192
+#define FINSH_THREAD_STACK_SIZE 16384
 #define FINSH_CMD_SIZE 256
 #define FINSH_USING_MSH
 #define FINSH_USING_MSH_DEFAULT
@@ -73,10 +73,11 @@
 
 #define RT_USING_DFS
 #define DFS_USING_WORKDIR
-#define DFS_FILESYSTEMS_MAX 4
-#define DFS_FILESYSTEM_TYPES_MAX 4
+#define DFS_FILESYSTEMS_MAX 5
+#define DFS_FILESYSTEM_TYPES_MAX 5
 #define DFS_FD_MAX 16
 #define RT_USING_DFS_ELMFAT
+#define RT_USING_DFS_RAMFS
 
 /* elm-chan's FatFs, Generic FAT Filesystem Module */
 
@@ -342,6 +343,10 @@
 #define PLAYER_USING_EXAMPLE00
 #define PLAYER_USING_EXAMPLE02
 /* PLAYER END **************************************************************************** */ 
+
+
+#define PKG_USING_TINYCRYPT
+#define TINY_CRYPT_BASE64
 
 
 #define PKG_USING_MULTIBUTTON

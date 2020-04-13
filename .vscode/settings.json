@@ -16,7 +16,9 @@
         "player.h": "c",
         "usermain.h": "c",
         "rtdebug.h": "c",
-        "wlan_dev.h": "c"
+        "wlan_dev.h": "c",
+        "dfs_romfs.h": "c",
+        "tinycrypt.h": "c"
     },
     "MicroPython.executeButton": [
         {

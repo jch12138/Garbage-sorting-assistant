@@ -164,6 +164,7 @@ static void showphoto_thread(void* param)
             if (fd >= 0)
             {
                 write(fd, session.buf, session.total_len);
+                rt_kprintf("session.total_len=%d\r\n",session.total_len );
                 close(fd);
                 rt_kprintf("save %s ok!!!\n", file_name);
                 res = Decode_Jpg(file_name);
