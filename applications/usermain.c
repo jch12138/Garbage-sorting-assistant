@@ -8,7 +8,7 @@ int user_app_start()
 {
     rt_kprintf("用户程序运行!\r\n");
     rt_thread_delay(1000);
-    //wlan_connect();
+    wlan_connect();
 
 }
 
@@ -17,6 +17,7 @@ void wlan_connect(){
 
     //char wifi_ssid[32]    = "TP-LINK_1";
     //char wifi_key[32]     = "jis555555";
+    rt_kprintf("wifi连接中...\r\n");
     struct rt_wlan_info info;
     int result = 0;
 
@@ -27,7 +28,7 @@ void wlan_connect(){
         rt_kprintf("设备未找到!\r\n");
     }
 
-    rt_wlan_info_init(&info, WIFI_STATION, SECURITY_WPA2_MIXED_PSK, "TP-LiNK_1");
+    rt_wlan_info_init(&info, WIFI_STATION, SECURITY_WPA2_MIXED_PSK, "TP-LINK_1");
 
     result = rt_wlan_init(wlan, WIFI_STATION);
 

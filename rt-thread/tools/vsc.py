@@ -53,7 +53,7 @@ def GenerateCFiles(env):
         config_obj['cppStandard'] = "c++11"
 
         # format "a/b," to a/b. remove first quotation mark("),and remove end (",)
-        includePath = []
+        includePath = [os.getcwd().replace('\\', '/')]
         for i in info['CPPPATH']:
             if i[0] == '\"' and i[len(i) - 2:len(i)] == '\",':
                 includePath.append(i[1:len(i) - 2])
