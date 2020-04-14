@@ -3,6 +3,7 @@
 #include <wlan_dev.h>
 #include <webclient.h>
 #include <tinycrypt.h>
+#include <string.h>
 #ifdef RT_USING_DFS
 #include <dfs_fs.h>
 // int mnt_init(void)
@@ -24,11 +25,10 @@
 
 #endif
 
+#define POST_RESP_BUFSZ                1024
+#define POST_HEADER_BUFSZ              1024
 
 void wlan_connect(void);
-
-#define wifi_ssid "TP-LINK_1"
-#define wifi_key "jia555555"
 
 int user_app_start()
 {
@@ -69,13 +69,13 @@ MSH_CMD_EXPORT(photo2base64,base64 );
 
 void wlan_connect(){
 
-    //char wifi_ssid[32]    = "TP-LINK_1";
-    //char wifi_key[32]     = "jis555555";
+    #define wifi_ssid "TP-LINK_1"
+    #define wifi_key "jia555555"
+
     rt_kprintf("wifi连接中...\r\n");
     struct rt_wlan_info info;
     int result = 0;
 
-    //struct rt_wlan_device *wlan = RT_NULL;
     struct rt_wlan_device *wlan = (struct rt_wlan_device*)rt_device_find("w0");
 
     if(wlan == RT_NULL){
@@ -100,28 +100,95 @@ void wlan_connect(){
     }
 }
 
-int get_garbage_info()
+
+/* send HTTP POST request by common request interface, it used to receive longer data */
+static int post(const char *uri, const char *post_data)
 {
-    #define HTTP_GET_URL "http://api.tianapi.com/txapi/imglajifenlei/index"
-    #define HEADER "Content-Type: application/x-www-form-urlencoded"
-    char *payload = "key=acda67d9ac820ea200a26f73d0b41adf";
+    struct webclient_session* session = RT_NULL;
     unsigned char *buffer = RT_NULL;
+    int index, ret = 0;
+    int bytes_read, resp_status;
 
-    
-    int length = 0;
-
-    length = webclient_request(HTTP_GET_URL, HEADER, payload, &buffer);
-
-    if (length < 0)
+    buffer = (unsigned char *) web_malloc(POST_RESP_BUFSZ);
+    if (buffer == RT_NULL)
     {
-        rt_kprintf("webclient GET request response data error.\r\n");
-        return -RT_ERROR;
+        rt_kprintf("no memory for receive response buffer.\n");
+        ret = -RT_ENOMEM;
+        goto __exit;
     }
 
-    rt_kprintf("webclient GET request response data :\r\n");
-    rt_kprintf("%s\r\n",buffer);
+    /* create webclient session and set header response size */
+    session = webclient_session_create(POST_HEADER_BUFSZ);
+    if (session == RT_NULL)
+    {
+        ret = -RT_ENOMEM;
+        goto __exit;
+    }
 
-    web_free(buffer);
+    /* build header for upload */
+    webclient_header_fields_add(session, "Authorization: APPCODE 91fc0ae1f57341a3bc63e43e84b414ef\r\n");
+    webclient_header_fields_add(session, "Content-Type: application/x-www-form-urlencoded; charset=UTF-8\r\n");
+
+    /* send POST request by default header */
+    if ((resp_status = webclient_post(session, uri, post_data)) != 200)
+    {
+        rt_kprintf("webclient POST request failed, response(%d) error.\n", resp_status);
+        ret = -RT_ERROR;
+        goto __exit;
+    }
+
+    rt_kprintf("webclient post response data: \n");
+    do
+    {
+        bytes_read = webclient_read(session, buffer, POST_RESP_BUFSZ);
+        if (bytes_read <= 0)
+        {
+            break;
+        }
+
+        for (index = 0; index < bytes_read; index++)
+        {
+            rt_kprintf("%c", buffer[index]);
+        }
+    } while (1);
+
+    rt_kprintf("\n");
+
+__exit:
+    if (session)
+    {
+        webclient_close(session);
+    }
+
+    if (buffer)
+    {
+        web_free(buffer);
+    }
+
+    return ret;
+}
+
+
+
+int get_garbage_info()
+{
+    #define GARBAGE_API "http://recover.market.alicloudapi.com/recover"
+    const char *payload =  "img=aHR0cHM6Ly9pbWcxNC4zNjBidXlpbWcuY29tL24wL2pmcy90NjQyMS8zMS8xNzk1Nzc5NS8xODAzNTUvYzU0ZjEyZGEvNTkzN2Q2ZGJOYTAxNTI0MjQuanBn";
+    char *uri=RT_NULL;
+    uri = web_strdup(GARBAGE_API);
+    if(uri == RT_NULL)
+    {
+        rt_kprintf("no memory for create post request uri buffer.\n");
+        return -RT_ENOMEM;
+    }
+
+    post(uri, payload);
+
+    if (uri)
+    {
+        web_free(uri);
+    }
+
     return RT_EOK;
 }
 MSH_CMD_EXPORT(get_garbage_info, get_garbage_info);

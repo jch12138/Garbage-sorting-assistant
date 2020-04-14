@@ -4,6 +4,7 @@ cwd  = GetCurrentDir()
 path = [cwd + '/inc']
 
 src  = Glob('src/webclient.c')
+src += Glob('samples/*.c')
 
 if GetDepend(['WEBCLIENT_USING_FILE_DOWMLOAD']):
     src += Glob('src/webclient_file.c')

@@ -16,12 +16,12 @@
 #define POST_RESP_BUFSZ                1024
 #define POST_HEADER_BUFSZ              1024
 
-#define POST_LOCAL_URI                 "http://www.rt-thread.com/service/echo"
+#define POST_LOCAL_URI                 "http://recover.market.alicloudapi.com/recover"
 
-const char *post_data = "RT-Thread is an open source IoT operating system from China!";
+const char *post_data = "img=aHR0cHM6Ly9pbWcxNC4zNjBidXlpbWcuY29tL24wL2pmcy90NjQyMS8zMS8xNzk1Nzc5NS8xODAzNTUvYzU0ZjEyZGEvNTkzN2Q2ZGJOYTAxNTI0MjQuanBn";
 
 /* send HTTP POST request by common request interface, it used to receive longer data */
-static int webclient_post_comm(const char *uri, const char *post_data)
+char *webclient_post_comm(const char *uri, const char *post_data)
 {
     struct webclient_session* session = RT_NULL;
     unsigned char *buffer = RT_NULL;
@@ -46,7 +46,8 @@ static int webclient_post_comm(const char *uri, const char *post_data)
 
     /* build header for upload */
     webclient_header_fields_add(session, "Content-Length: %d\r\n", strlen(post_data));
-    webclient_header_fields_add(session, "Content-Type: application/octet-stream\r\n");
+    webclient_header_fields_add(session, "Authorization: APPCODE 91fc0ae1f57341a3bc63e43e84b414ef\r\n");
+    webclient_header_fields_add(session, "Content-Type: application/x-www-form-urlencoded; charset=UTF-8\r\n");
 
     /* send POST request by default header */
     if ((resp_status = webclient_post(session, uri, post_data)) != 200)
@@ -79,12 +80,12 @@ __exit:
         webclient_close(session);
     }
 
-    if (buffer)
-    {
-        web_free(buffer);
-    }
+    // if (buffer)
+    // {
+    //     web_free(buffer);
+    // }
 
-    return ret;
+    return buffer;
 }
 
 /* send HTTP POST request by simplify request interface, it used to received shorter data */
