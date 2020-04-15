@@ -14,13 +14,13 @@
 #include <webclient.h>
 
 #define POST_RESP_BUFSZ                1024
-#define POST_HEADER_BUFSZ              1024
+#define POST_HEADER_BUFSZ              4096
 
-#define POST_LOCAL_URI                 "http://recover.market.alicloudapi.com/recover"
+#define POST_LOCAL_URI                 "http://api.tianapi.com/txapi/imglajifenlei/index"
 
-const char *post_data = "img=aHR0cHM6Ly9pbWcxNC4zNjBidXlpbWcuY29tL24wL2pmcy90NjQyMS8zMS8xNzk1Nzc5NS8xODAzNTUvYzU0ZjEyZGEvNTkzN2Q2ZGJOYTAxNTI0MjQuanBn";
+//char post_data[45*1024];
+const char *post_data = "key=acda67d9ac820ea200a26f73d0b41adf";
 
-/* send HTTP POST request by common request interface, it used to receive longer data */
 char *webclient_post_comm(const char *uri, const char *post_data)
 {
     struct webclient_session* session = RT_NULL;
@@ -46,8 +46,12 @@ char *webclient_post_comm(const char *uri, const char *post_data)
 
     /* build header for upload */
     webclient_header_fields_add(session, "Content-Length: %d\r\n", strlen(post_data));
-    webclient_header_fields_add(session, "Authorization: APPCODE 91fc0ae1f57341a3bc63e43e84b414ef\r\n");
-    webclient_header_fields_add(session, "Content-Type: application/x-www-form-urlencoded; charset=UTF-8\r\n");
+    webclient_header_fields_add(session, "Content-Type: application/x-www-form-urlencoded;\r\n");
+    //webclient_header_fields_add(session, "Connection: keep-alive\r\n");
+    //webclient_header_fields_add(session, "Accept: */*\r\n");
+    //webclient_header_fields_add(session, "Accept-Encoding: gzip, deflate\r\n");
+    //webclient_header_fields_add(session, "Host: api.tianapi.com\r\n");
+    //webclient_header_fields_add(session, "User-Agent: python-requests/2.22.0\r\n");
 
     /* send POST request by default header */
     if ((resp_status = webclient_post(session, uri, post_data)) != 200)
@@ -94,8 +98,13 @@ static int webclient_post_smpl(const char *uri, const char *post_data)
     char *request = RT_NULL, *header = RT_NULL;
     int index;
 
-    webclient_request_header_add(&header, "Content-Length: %d\r\n", strlen(post_data));
-    webclient_request_header_add(&header, "Content-Type: application/octet-stream\r\n");
+    //webclient_header_fields_add(&header, "Content-Length: %d\r\n", strlen(post_data));
+    //webclient_header_fields_add(&header, "Content-Type: application/x-www-form-urlencoded;\r\n");
+    //webclient_header_fields_add(&header, "Connection: keep-alive\r\n");
+    //webclient_header_fields_add(&header, "Accept: */*\r\n");
+    //webclient_header_fields_add(&header, "Accept-Encoding: gzip, deflate\r\n");
+    //webclient_header_fields_add(&header, "Host: api.tianapi.com\r\n");
+    //webclient_header_fields_add(&header, "User-Agent: python-requests/2.22.0\r\n");
 
     if (webclient_request(uri, (const char *)header, post_data, (unsigned char **)&request) < 0)
     {
@@ -139,9 +148,25 @@ int webclient_post_test(int argc, char **argv)
             return -RT_ENOMEM;
         }
 
-        webclient_post_comm(uri, post_data);
+        // int fd = open("/sd/base64.txt",O_RDONLY);
+        // unsigned char *buffer = RT_NULL;
+        // buffer = (unsigned char *)rt_malloc(sizeof(unsigned char)*1024*40);
+        // if(buffer==RT_NULL)
+        // {
+        //     rt_kprintf("内存分配失败\r\n");
+        // }
+        // int res = read(fd, buffer, 1024*40);
+        // close(fd);
+        // rt_kprintf("res=%d\r\n",res);
+
+        // strcat(post_data,"key=acda67d9ac820ea200a26f73d0b41adf&img=data:image/jpg;base64,");
+        // strcat(post_data, buffer);
+        // rt_kprintf(post_data);
+        //webclient_post_comm(uri, post_data);
+        // rt_free(buffer);
+        // memset(post_data,0,sizeof(post_data));
     }
-    else if (argc == 2)
+    else if (argc == 3)
     {
         if (rt_strcmp(argv[1], "-s") == 0)
         {
@@ -162,7 +187,7 @@ int webclient_post_test(int argc, char **argv)
                 rt_kprintf("no memory for create post request uri buffer.\n");
                 return -RT_ENOMEM;
             }
-            webclient_post_comm(uri, post_data);
+            webclient_post_comm(uri, argv[2]);
         }
     }
     else if(argc == 3 && rt_strcmp(argv[1], "-s") == 0)

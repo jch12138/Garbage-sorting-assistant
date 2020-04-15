@@ -18,7 +18,14 @@
         "rtdebug.h": "c",
         "wlan_dev.h": "c",
         "dfs_romfs.h": "c",
-        "tinycrypt.h": "c"
+        "tinycrypt.h": "c",
+        "fstream": "c",
+        "__functional_03": "c",
+        "functional": "c",
+        "locale": "c",
+        "random": "c",
+        "complex": "c",
+        "cjson.h": "c"
     },
     "MicroPython.executeButton": [
         {

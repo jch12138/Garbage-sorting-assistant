@@ -132,6 +132,11 @@ int webclient_request_header_add(char **request_header, const char *fmt, ...);
 int webclient_resp_status_get(struct webclient_session *session);
 int webclient_content_length_get(struct webclient_session *session);
 
+
+char *webclient_post_comm(const char *uri, const char *post_data);
+
+
+
 #ifdef RT_USING_DFS
 /* file related operations */
 int webclient_get_file(const char *URI, const char *filename);
