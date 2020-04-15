@@ -25,7 +25,12 @@
         "locale": "c",
         "random": "c",
         "complex": "c",
-        "cjson.h": "c"
+        "cjson.h": "c",
+        "string": "c",
+        "array": "c",
+        "iterator": "c",
+        "string_view": "c",
+        "vector": "c"
     },
     "MicroPython.executeButton": [
         {
