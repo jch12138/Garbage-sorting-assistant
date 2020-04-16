@@ -37,7 +37,6 @@ int photo2base64(const char * path,unsigned char * dst)
     int fd = open(path,O_RDONLY);
     unsigned char *img = RT_NULL;
     img = (unsigned char *)rt_malloc(sizeof(unsigned char)*1024*24);
-    //dst = (unsigned char *)rt_malloc(sizeof(unsigned char)*1024*50);
     if(img==RT_NULL || dst==RT_NULL)
     {
         rt_kprintf("内存分配失败\r\n");
@@ -48,12 +47,6 @@ int photo2base64(const char * path,unsigned char * dst)
     int len = 1024*40;
     tiny_base64_encode(dst,&len,img,1024*24);
     rt_kprintf("len=%d\r\n",len);
-    // unlink("/sd/base64.txt");
-    // fd = open("/sd/base64.txt",O_WRONLY|O_CREAT);
-    // res = write(fd,dst,len);
-    // rt_kprintf("res = %d\r\n",res);
-    // close(fd);
-    //print_base64(dst,len);
     rt_free(img);
     return len;
 }
@@ -109,6 +102,27 @@ int urllencode_test(int argc, char* argv[])
     return 0;
 }
 MSH_CMD_EXPORT(urllencode_test, urllencode_test);
+
+
+int tts_test(int argc,char **argv)
+{
+    char url[50*1024];
+    char *text1 = RT_NULL;
+    char *text2 = RT_NULL;
+    char *origin = "可回收垃圾,不可回收垃圾,垃圾垃圾都是垃圾";
+
+    text1 = (char *)rt_malloc(sizeof(char)*1024*5);
+    int text_len=0;
+    URLEncode(origin,strlen(origin),text1,text_len);
+    URLEncode(text1,strlen(text1),text2,text_len);
+
+    rt_sprintf(url,"http://tsn.baidu.com/text2audio?tok=24.77fdd5e29e31191ee6c060718b68da99.2592000.1589599990.282335-16279726&tex=%s&per=4&spd=5&pit=5&vol=5&aue=3&cuid=123456PYTHON&lan=zh&ctp=1",text);
+
+
+}
+
+
+
 
 int base64_test(int argc, char **argv)
 {

@@ -149,6 +149,8 @@
                 "D:/RT-Thread-Contest/Garbage-sorting-assistant/packages/TJpgDec",
                 "D:/RT-Thread-Contest/Garbage-sorting-assistant/packages/cJSON",
                 "D:/RT-Thread-Contest/Garbage-sorting-assistant/packages/fal/inc",
+                "D:/RT-Thread-Contest/Garbage-sorting-assistant/packages/librws-v1.2.4/examples",
+                "D:/RT-Thread-Contest/Garbage-sorting-assistant/packages/librws-v1.2.4/librws/inc",
                 "D:/RT-Thread-Contest/Garbage-sorting-assistant/packages/littlefs-v2.1.1",
                 "D:/RT-Thread-Contest/Garbage-sorting-assistant/packages/netutils/netio",
                 "D:/RT-Thread-Contest/Garbage-sorting-assistant/packages/netutils/ntp",

@@ -344,10 +344,9 @@
 #define PLAYER_USING_EXAMPLE02
 /* PLAYER END **************************************************************************** */ 
 
-
+/* Base64 解码 */
 #define PKG_USING_TINYCRYPT
 #define TINY_CRYPT_BASE64
-
 
 #define PKG_USING_MULTIBUTTON
 //#define MULTIBUTTON_USING_EXAMPLE_ASYNC
