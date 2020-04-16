@@ -4,7 +4,7 @@
 #include <webclient.h>
 #include <tinycrypt.h>
 #include <string.h>
-#include "cjson.h"
+#include "cJSON.h"
 #ifdef RT_USING_DFS
 #include <dfs_fs.h>
 #endif
@@ -103,23 +103,53 @@ int urllencode_test(int argc, char* argv[])
 }
 MSH_CMD_EXPORT(urllencode_test, urllencode_test);
 
+int cJSON_test(int argc, char **argv)
+{
+    cJSON *root = RT_NULL;
+
+    root = cJSON_Parse("{\"code\":200,\"msg\":\"success\",\"newslist\":[{\"name\":\"键盘\",\"trust\":62,\"lajitype\":0,\"lajitip\":\"键盘是可回收垃圾，常见包括各类废金属、玻璃瓶、饮料瓶、电子产品等。投放时应注意轻投轻放、清洁干燥、避免污染。\"},{\"name\":\"笔记本电脑\",\"trust\":44,\"lajitype\":0,\"lajitip\":\"笔记本电脑是可回收垃圾，常见包括各类废金属、玻璃瓶、饮料瓶、电子产品等。投放时应注意轻投轻放、清洁干燥、避免污染。\"},{\"name\":\"笔记本\",\"trust\":28,\"lajitype\":0,\"lajitip\":\"笔记本是可回收垃圾，常见包括各类废金属、玻璃瓶、饮料瓶、电子产品等。投放时应注意轻投轻放、清洁干燥、避免污染。\"},{\"name\":\"触控板\",\"trust\":14,\"lajitype\":4,\"lajitip\":\"触控板的垃圾分类系统暂时无法判别，请重新尝试拍摄物体的主要特征。\"},{\"name\":\"台式电脑\",\"trust\":0,\"lajitype\":0,\"lajitip\":\"台式电脑是可回收垃圾，常见包括各类废金属、玻璃瓶、饮料瓶、电子产品等。投放时应注意轻投轻放、清洁干燥、避免污染。\"}]}");
+    if(RT_NULL == root)
+    {
+        rt_kprintf("cJSON_Parse Failed!\r\n");
+    }
+    cJSON *code_json = cJSON_GetObjectItem(root, "code");
+    if(RT_NULL != code_json)
+    {
+        char *code = cJSON_Print(code_json);
+        printf("name:%s\n",code);
+        free(code);
+    }
+}
+
 
 int tts_test(int argc,char **argv)
 {
-    char url[50*1024];
-    char *text1 = RT_NULL;
-    char *text2 = RT_NULL;
+    unsigned char *url = RT_NULL;
+    unsigned char *text1 = RT_NULL;
+    unsigned char *text2 = RT_NULL;
     char *origin = "可回收垃圾,不可回收垃圾,垃圾垃圾都是垃圾";
+    char *token = "24.77fdd5e29e31191ee6c060718b68da99.2592000.1589599990.282335-16279726";
 
-    text1 = (char *)rt_malloc(sizeof(char)*1024*5);
-    int text_len=0;
-    URLEncode(origin,strlen(origin),text1,text_len);
-    URLEncode(text1,strlen(text1),text2,text_len);
+    text1 = (unsigned char *)rt_malloc(sizeof(unsigned char)*1024*20);
+    
+    URLEncode(origin,rt_strlen(origin),text1,1024*20);
+    print_base64(text1,rt_strlen(text1));
 
-    rt_sprintf(url,"http://tsn.baidu.com/text2audio?tok=24.77fdd5e29e31191ee6c060718b68da99.2592000.1589599990.282335-16279726&tex=%s&per=4&spd=5&pit=5&vol=5&aue=3&cuid=123456PYTHON&lan=zh&ctp=1",text);
-
-
+    text2 = (unsigned char *)rt_malloc(sizeof(unsigned char)*1024*20);
+    URLEncode(text1,rt_strlen(text1),text2,1024*20);
+    rt_free(text1);
+    print_base64(text2,rt_strlen(text2));
+    url = (unsigned char *)rt_malloc(sizeof(unsigned char)*1024*30);
+    rt_sprintf(url,"http://tsn.baidu.com/text2audio?tok=%s&tex=%s&per=4&spd=5&pit=5&vol=5&aue=3&cuid=123456PYTHON&lan=zh&ctp=1",token,text2);
+    rt_free(text2);
+    print_base64(url,rt_strlen(url));
+    char *uri=web_strdup(url);
+    webclient_get_file(uri,"/sd/audio.mp3");
+    web_free(uri);
+    rt_free(url);
+    return 0;
 }
+MSH_CMD_EXPORT(tts_test,tts test);
 
 
 
