@@ -208,7 +208,7 @@ int player(int argc, char **argv)
     if((start == RT_TRUE) && (uri != RT_NULL))
     {
         rt_kprintf("//////////////////////////// player_play \n"); 
-        player_stop(); 
+        player_stop();
         player_set_uri(uri); 
         player_play(); 
         rt_kprintf("//////////////////////////// player_play end \n"); 

@@ -18,16 +18,11 @@ static const struct romfs_dirent _romfs_root_udisk[] = {
 
 };
 
-static const struct romfs_dirent _romfs_root_ram[] = {
-
-};
-
 static const struct romfs_dirent _romfs_root[] = {
     {ROMFS_DIRENT_DIR, "flash0", (rt_uint8_t *)_romfs_root_flash0, sizeof(_romfs_root_flash0)/sizeof(_romfs_root_flash0[0])},
     {ROMFS_DIRENT_DIR, "flash1", (rt_uint8_t *)_romfs_root_flash0, sizeof(_romfs_root_flash0)/sizeof(_romfs_root_flash0[0])},
     {ROMFS_DIRENT_DIR, "sd", (rt_uint8_t *)_romfs_root_sd, sizeof(_romfs_root_sd)/sizeof(_romfs_root_sd[0])},
-    {ROMFS_DIRENT_DIR, "udisk", (rt_uint8_t *)_romfs_root_udisk, sizeof(_romfs_root_udisk)/sizeof(_romfs_root_udisk[0])},
-    {ROMFS_DIRENT_DIR, "ram", (rt_uint8_t *)_romfs_root_ram, sizeof(_romfs_root_ram)/sizeof(_romfs_root_ram[0])}
+    {ROMFS_DIRENT_DIR, "udisk", (rt_uint8_t *)_romfs_root_udisk, sizeof(_romfs_root_udisk)/sizeof(_romfs_root_udisk[0])}
 };
 
 const struct romfs_dirent romfs_root = {

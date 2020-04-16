@@ -30,7 +30,9 @@
         "array": "c",
         "iterator": "c",
         "string_view": "c",
-        "vector": "c"
+        "vector": "c",
+        "include.h": "c",
+        "ios": "c"
     },
     "MicroPython.executeButton": [
         {

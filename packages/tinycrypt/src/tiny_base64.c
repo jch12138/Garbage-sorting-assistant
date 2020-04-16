@@ -72,7 +72,6 @@ static const unsigned char base64_dec_map[128] = {
  */
 int tiny_base64_encode(unsigned char *dst, int *dlen, unsigned char *src, int slen)
 {
-	rt_kprintf("开始解码\r\n");
 	int i, n;
 	int C1, C2, C3;
 	unsigned char *p;

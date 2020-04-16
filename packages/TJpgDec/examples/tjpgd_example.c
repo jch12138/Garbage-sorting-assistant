@@ -92,6 +92,7 @@ uint16_t out_func (JDEC* jd, void* bitmap, JRECT* rect)
         for (int x = 0; x < (rect->right - rect->left) + 1; x++)
         {
             lcd_write_half_word(*(uint16_t *)src2);
+            
             src2 += 2;
         }
 
@@ -176,7 +177,7 @@ int Decode_Jpg(rt_uint8_t *file_name)
         rt_kprintf("Image dimensions: %u by %u. %u bytes used.\n", jdec.width, jdec.height, 3100 - jdec.sz_pool);
         devid.fbuf = rt_malloc(3 * jdec.width * jdec.height); /* Frame buffer for output image (assuming RGB888 cfg) */
         devid.wfbuf = jdec.width;
-        res = jd_decomp(&jdec, out_func, 0);   /* Start to decompress with 1/1 scaling */
+        res = jd_decomp(&jdec, out_func, 1);   /* Start to decompress with 1/1 scaling */
         if (res == JDR_OK) {
             /* Decompression succeeded. You have the decompressed image in the frame buffer here. */
             rt_kprintf("\rOK  \n");

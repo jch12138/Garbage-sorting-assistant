@@ -47,11 +47,6 @@ char *webclient_post_comm(const char *uri, const char *post_data)
     /* build header for upload */
     webclient_header_fields_add(session, "Content-Length: %d\r\n", strlen(post_data));
     webclient_header_fields_add(session, "Content-Type: application/x-www-form-urlencoded;\r\n");
-    //webclient_header_fields_add(session, "Connection: keep-alive\r\n");
-    //webclient_header_fields_add(session, "Accept: */*\r\n");
-    //webclient_header_fields_add(session, "Accept-Encoding: gzip, deflate\r\n");
-    //webclient_header_fields_add(session, "Host: api.tianapi.com\r\n");
-    //webclient_header_fields_add(session, "User-Agent: python-requests/2.22.0\r\n");
 
     /* send POST request by default header */
     if ((resp_status = webclient_post(session, uri, post_data)) != 200)
@@ -76,7 +71,7 @@ char *webclient_post_comm(const char *uri, const char *post_data)
         }
     } while (1);
 
-    rt_kprintf("\n");
+    rt_kprintf("\r\n");
 
 __exit:
     if (session)
@@ -137,83 +132,83 @@ static int webclient_post_smpl(const char *uri, const char *post_data)
 
 int webclient_post_test(int argc, char **argv)
 {
-    char *uri = RT_NULL;
+    // char *uri = RT_NULL;
 
-    if (argc == 1)
-    {
-        uri = web_strdup(POST_LOCAL_URI);
-        if(uri == RT_NULL)
-        {
-            rt_kprintf("no memory for create post request uri buffer.\n");
-            return -RT_ENOMEM;
-        }
+    // if (argc == 1)
+    // {
+    //     uri = web_strdup(POST_LOCAL_URI);
+    //     if(uri == RT_NULL)
+    //     {
+    //         rt_kprintf("no memory for create post request uri buffer.\n");
+    //         return -RT_ENOMEM;
+    //     }
 
-        // int fd = open("/sd/base64.txt",O_RDONLY);
-        // unsigned char *buffer = RT_NULL;
-        // buffer = (unsigned char *)rt_malloc(sizeof(unsigned char)*1024*40);
-        // if(buffer==RT_NULL)
-        // {
-        //     rt_kprintf("内存分配失败\r\n");
-        // }
-        // int res = read(fd, buffer, 1024*40);
-        // close(fd);
-        // rt_kprintf("res=%d\r\n",res);
+    //     // int fd = open("/sd/base64.txt",O_RDONLY);
+    //     // unsigned char *buffer = RT_NULL;
+    //     // buffer = (unsigned char *)rt_malloc(sizeof(unsigned char)*1024*40);
+    //     // if(buffer==RT_NULL)
+    //     // {
+    //     //     rt_kprintf("内存分配失败\r\n");
+    //     // }
+    //     // int res = read(fd, buffer, 1024*40);
+    //     // close(fd);
+    //     // rt_kprintf("res=%d\r\n",res);
 
-        // strcat(post_data,"key=acda67d9ac820ea200a26f73d0b41adf&img=data:image/jpg;base64,");
-        // strcat(post_data, buffer);
-        // rt_kprintf(post_data);
-        //webclient_post_comm(uri, post_data);
-        // rt_free(buffer);
-        // memset(post_data,0,sizeof(post_data));
-    }
-    else if (argc == 3)
-    {
-        if (rt_strcmp(argv[1], "-s") == 0)
-        {
-            uri = web_strdup(POST_LOCAL_URI);
-            if(uri == RT_NULL)
-            {
-                rt_kprintf("no memory for create post request uri buffer.\n");
-                return -RT_ENOMEM;
-            }
+    //     // strcat(post_data,"key=acda67d9ac820ea200a26f73d0b41adf&img=data:image/jpg;base64,");
+    //     // strcat(post_data, buffer);
+    //     // rt_kprintf(post_data);
+    //     //webclient_post_comm(uri, post_data);
+    //     // rt_free(buffer);
+    //     // memset(post_data,0,sizeof(post_data));
+    // }
+    // else if (argc == 3)
+    // {
+    //     if (rt_strcmp(argv[1], "-s") == 0)
+    //     {
+    //         uri = web_strdup(POST_LOCAL_URI);
+    //         if(uri == RT_NULL)
+    //         {
+    //             rt_kprintf("no memory for create post request uri buffer.\n");
+    //             return -RT_ENOMEM;
+    //         }
 
-            webclient_post_smpl(uri, post_data);
-        }
-        else
-        {
-            uri = web_strdup(argv[1]);
-            if(uri == RT_NULL)
-            {
-                rt_kprintf("no memory for create post request uri buffer.\n");
-                return -RT_ENOMEM;
-            }
-            webclient_post_comm(uri, argv[2]);
-        }
-    }
-    else if(argc == 3 && rt_strcmp(argv[1], "-s") == 0)
-    {
-        uri = web_strdup(argv[2]);
-        if(uri == RT_NULL)
-        {
-            rt_kprintf("no memory for create post request uri buffer.\n");
-            return -RT_ENOMEM;
-        }
+    //         webclient_post_smpl(uri, post_data);
+    //     }
+    //     else
+    //     {
+    //         uri = web_strdup(argv[1]);
+    //         if(uri == RT_NULL)
+    //         {
+    //             rt_kprintf("no memory for create post request uri buffer.\n");
+    //             return -RT_ENOMEM;
+    //         }
+    //         webclient_post_comm(uri, argv[2]);
+    //     }
+    // }
+    // else if(argc == 3 && rt_strcmp(argv[1], "-s") == 0)
+    // {
+    //     uri = web_strdup(argv[2]);
+    //     if(uri == RT_NULL)
+    //     {
+    //         rt_kprintf("no memory for create post request uri buffer.\n");
+    //         return -RT_ENOMEM;
+    //     }
 
-        webclient_post_smpl(uri, post_data);
-    }
-    else
-    {
-        rt_kprintf("web_post_test [uri]     - webclient post request test.\n");
-        rt_kprintf("web_post_test -s [uri]  - webclient simplify post request test.\n");
-        return -RT_ERROR;
-    }
+    //     webclient_post_smpl(uri, post_data);
+    // }
+    // else
+    // {
+    //     rt_kprintf("web_post_test [uri]     - webclient post request test.\n");
+    //     rt_kprintf("web_post_test -s [uri]  - webclient simplify post request test.\n");
+    //     return -RT_ERROR;
+    // }
     
-    if (uri)
-    {
-        web_free(uri);
-    }
+    // if (uri)
+    // {
+    //     web_free(uri);
+    // }
 
-    return RT_EOK;
+    // return RT_EOK;
 }
 
 
