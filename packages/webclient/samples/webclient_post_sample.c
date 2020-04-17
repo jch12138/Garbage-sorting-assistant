@@ -21,20 +21,20 @@
 //char post_data[45*1024];
 const char *post_data = "key=acda67d9ac820ea200a26f73d0b41adf";
 
-char *webclient_post_comm(const char *uri, const char *post_data)
+int webclient_post_comm(const char *uri, const char *post_data, char *buffer)
 {
     struct webclient_session* session = RT_NULL;
-    unsigned char *buffer = RT_NULL;
+    //unsigned char *buffer = RT_NULL;
     int index, ret = 0;
     int bytes_read, resp_status;
 
-    buffer = (unsigned char *) web_malloc(POST_RESP_BUFSZ);
-    if (buffer == RT_NULL)
-    {
-        rt_kprintf("no memory for receive response buffer.\n");
-        ret = -RT_ENOMEM;
-        goto __exit;
-    }
+    // buffer = (unsigned char *) web_malloc(POST_RESP_BUFSZ);
+    // if (buffer == RT_NULL)
+    // {
+    //     rt_kprintf("no memory for receive response buffer.\n");
+    //     ret = -RT_ENOMEM;
+    //     goto __exit;
+    // }
 
     /* create webclient session and set header response size */
     session = webclient_session_create(POST_HEADER_BUFSZ);
@@ -84,7 +84,7 @@ __exit:
     //     web_free(buffer);
     // }
 
-    return buffer;
+    return 0;
 }
 
 /* send HTTP POST request by simplify request interface, it used to received shorter data */

@@ -36,7 +36,6 @@
 #define DBG_COLOR
 #include <rtdbg.h>
 
-
 static rt_sem_t sem_base64 = RT_NULL;
 
 static void hexdump(const rt_uint8_t *p, rt_size_t len)
@@ -228,28 +227,109 @@ int URLEncode(const char *str, const int strSize, char *result, const int result
 }
 
 
+int tts(char *path)
+{
+    char *uri = rt_strdup(path);
+    player_stop();
+    player_set_uri(uri);
+    LOG_I("开始播放");
+    player_play();
+
+    return 0;
+}
+
+int text2audio(char *text)
+{
+    unsigned char *url = RT_NULL;
+    unsigned char *text1 = RT_NULL;
+    unsigned char *text2 = RT_NULL;
+    //char *text = "可回收垃圾,不可回收垃圾,垃圾垃圾都是垃圾";
+    char *token = "24.77fdd5e29e31191ee6c060718b68da99.2592000.1589599990.282335-16279726";
+
+    text1 = (unsigned char *)rt_malloc(sizeof(unsigned char) * 1024 * 20);
+
+    LOG_I("文本转码中");
+    URLEncode(text, rt_strlen(text), text1, 1024 * 20);
+    print_base64(text1, rt_strlen(text1));
+
+    text2 = (unsigned char *)rt_malloc(sizeof(unsigned char) * 1024 * 20);
+    URLEncode(text1, rt_strlen(text1), text2, 1024 * 20);
+    rt_free(text1);
+    print_base64(text2, rt_strlen(text2));
+    url = (unsigned char *)rt_malloc(sizeof(unsigned char) * 1024 * 30);
+    rt_sprintf(url, "http://tsn.baidu.com/text2audio?tok=%s&tex=%s&per=4&spd=5&pit=5&vol=5&aue=3&cuid=123456PYTHON&lan=zh&ctp=1", token, text2);
+    rt_free(text2);
+
+    LOG_I("转码完成");
+
+    print_base64(url, rt_strlen(url));
+    char *uri = web_strdup(url);
+    webclient_get_file(uri, "/sd/audio.mp3");
+    LOG_I("音频下载完成");
+    web_free(uri);
+    rt_free(url);
+    return 0;
+}
+
 /* 用户线程入口 */
 static void userapp_entry(void *parameter)
 {
     while (1)
     {
-        LOG_I("Running...");
-        rt_thread_mdelay(5000);
+        // LOG_I("Running...");
+        // rt_thread_mdelay(5000);
+        session.event = rt_event_create("vt_event", RT_IPC_FLAG_FIFO);
+#define KEY_MID (13)
+        rt_pin_mode(KEY_MID, PIN_MODE_INPUT_PULLUP);
+        while (1)
+        {
+            if (rt_pin_read(KEY_MID) == PIN_LOW)
+            {
+                rt_thread_delay(80);
+                if (rt_pin_read(KEY_MID) == PIN_LOW)
+                {
+                    LOG_I("KEY_MID is pressed");
+                    LOG_I("正在开启摄像头...");
+                    camera_start(); //开启摄像头传输照片
+                    tvideo_capture(1);
+                    rt_event_recv(session.event, SEND_FRAME_EVENT, RT_EVENT_FLAG_OR | RT_EVENT_FLAG_CLEAR, RT_WAITING_FOREVER, RT_NULL);
+
+                    int fd, res;
+                    rt_sprintf(file_name, "/sd/temp.jpg", file_count);
+                    LOG_I("name = %s \n", file_name);
+                    fd = open(file_name, O_WRONLY | O_CREAT);
+                    if (fd >= 0)
+                    {
+                        write(fd, session.buf, session.total_len);
+                        LOG_I("session.total_len=%d\r\n", session.total_len);
+                        close(fd);
+                        LOG_I("save %s ok!!!\n", file_name);
+                        res = Decode_Jpg(file_name);
+                        rt_sem_release(sem_base64);
+                        LOG_I("res = %d\n", res);
+                    }
+                    else
+                    {
+                        LOG_E("save pic failed!!!\n");
+                    }
+                    tvideo_capture(0);
+                }
+            }
+            rt_thread_mdelay(100);
+        }
     }
 }
 
 static void base64_entry(void *parameter)
 {
-    while(1)
+    while (1)
     {
-        rt_sem_take(sem_base64,RT_WAITING_FOREVER);
+        rt_sem_take(sem_base64, RT_WAITING_FOREVER);
+        LOG_I("收到信号量");
         char *uri = RT_NULL;
         uri = web_strdup("http://api.tianapi.com/txapi/imglajifenlei/index");
-        if (uri == RT_NULL)
+        if (uri != RT_NULL)
         {
-            rt_kprintf("no memory for create post request uri buffer.\n");
-            return -RT_ENOMEM;
-
             unsigned char *dst = (unsigned char *)rt_malloc(sizeof(unsigned char) * 1024 * 40);
             LOG_I("开始对图片进行编码");
             photo2base64("/sd/temp.jpg", dst);
@@ -264,13 +344,13 @@ static void base64_entry(void *parameter)
             unsigned char *res = RT_NULL;
             res = (unsigned char *)rt_malloc(4096);
             LOG_I("已发送请求");
-            res = webclient_post_comm(uri, buffer);
-            LOG_I("请求结束")
+            webclient_post_comm(uri, buffer, res);
+            LOG_I("请求结束");
 
             web_free(uri);
             rt_free(dst);
             rt_free(buffer);
-
+            LOG_I("开始解析返回数据");
             cJSON *root = RT_NULL;
 
             root = cJSON_Parse(res);
@@ -286,41 +366,67 @@ static void base64_entry(void *parameter)
             {
                 char *code = cJSON_Print(code_json);
                 printf("code:%s\n", code);
+                if(rt_strcmp(code,"200") != 0)
+                {
+                    LOG_E("网络错误");
+                    tts("/sd/net_error.mp3");
+                    continue;
+                }
                 free(code);
             }
             cJSON *newslist = cJSON_GetObjectItem(root, "newslist");
             int array_size = cJSON_GetArraySize(newslist);
-            for (int i = 0; i < array_size; i++)
+            // for (int i = 0; i < array_size; i++)
+            // {
+            //     cJSON *object = cJSON_GetArrayItem(newslist, i);
+            //     cJSON *name_json = cJSON_GetObjectItem(object, "name");
+            //     cJSON *type_json = cJSON_GetObjectItem(object, "lajitype");
+            //     cJSON *tip_json = cJSON_GetObjectItem(object, "lajitip");
+            //     if (name_json != RT_NULL)
+            //     {
+            //         char *name = cJSON_Print(name_json);
+            //         rt_kprintf("name:%s\r\n", name);
+            //         free(name);
+            //     }
+
+            //     if (type_json != RT_NULL)
+            //     {
+            //         char *type = cJSON_Print(type_json);
+            //         rt_kprintf("type:%s\r\n", type);
+            //         free(type);
+            //     }
+
+            //     if (tip_json != RT_NULL)
+            //     {
+            //         char *tip = cJSON_Print(tip_json);
+            //         rt_kprintf("tip:%s\r\n", tip);
+            //         free(tip);
+            //     }
+            // }
+            cJSON *object = cJSON_GetArrayItem(newslist, 0);
+            cJSON *tip_json = cJSON_GetObjectItem(object, "lajitip");
+
+            if (tip_json != RT_NULL)
             {
-                cJSON *object = cJSON_GetArrayItem(newslist, i);
-                cJSON *name_json = cJSON_GetObjectItem(object, "name");
-                cJSON *type_json = cJSON_GetObjectItem(object, "lajitype");
-                cJSON *tip_json = cJSON_GetObjectItem(object, "lajitip");
-                if (name_json != RT_NULL)
-                {
-                    char *name = cJSON_Print(name_json);
-                    rt_kprintf("name:%s\r\n", name);
-                    free(name);
-                }
-
-                if (type_json != RT_NULL)
-                {
-                    char *type = cJSON_Print(type_json);
-                    rt_kprintf("type:%s\r\n", type);
-                    free(type);
-                }
-
-                if (tip_json != RT_NULL)
-                {
-                    char *tip = cJSON_Print(tip_json);
-                    rt_kprintf("tip:%s\r\n", tip);
-                    free(tip);
-                }
+                char *tip = cJSON_Print(tip_json);
+                //rt_kprintf("tip:%s\r\n", tip);
+                text2audio(tip);
+                tts("/sd/audio.mp3");
+                free(tip);
             }
-            cJSON_Delete(root);
+            else
+            {
+                LOG_E("无法解析垃圾信息");
+            }
+            
 
-           
+            cJSON_Delete(root);
         }
+        else
+        {
+            LOG_E("URL解析失败");
+        }
+        
     }
 }
 
@@ -330,8 +436,8 @@ int user_app_start()
     LOG_I("准备运行用户程序!");
     wlan_connect();
     rt_thread_delay(4000);
-    sem_base64 = rt_sem_create("sem_base64",0,RT_IPC_FLAG_FIFO);
-    if(sem_base64 == RT_NULL)
+    sem_base64 = rt_sem_create("sem_base64", 0, RT_IPC_FLAG_FIFO);
+    if (sem_base64 == RT_NULL)
     {
         LOG_E("信号量创建失败!");
     }
@@ -341,55 +447,54 @@ int user_app_start()
         rt_thread_startup(userapp);
         LOG_I("用户程序已启动!\r\n");
     }
-    rt_thread_t base64_encode = rt_thread_create("base64",base64_entry,RT_NULL,4096,1,20);
+    rt_thread_t base64_encode = rt_thread_create("base64", base64_entry, RT_NULL, 4096, 1, 20);
     if (base64_encode != RT_NULL)
     {
         rt_thread_startup(base64_encode);
         LOG_I("Base64解码线程已启动!\r\n");
     }
-
 }
 
 int key_photo(int argc, char **argv)
 {
-    session.event = rt_event_create("vt_event", RT_IPC_FLAG_FIFO);
-    #define KEY_MID (13)
-    rt_pin_mode(KEY_MID, PIN_MODE_INPUT_PULLUP);
-    while (1)
-    {
-        if (rt_pin_read(KEY_MID) == PIN_LOW)
-        {
-            rt_thread_delay(80);
-            if (rt_pin_read(KEY_MID) == PIN_LOW)
-            {
-                LOG_I("KEY_MID is pressed");
-                LOG_I("正在开启摄像头...");
-                camera_start(); //开启摄像头传输照片
-                tvideo_capture(1);
-                rt_event_recv(session.event, SEND_FRAME_EVENT, RT_EVENT_FLAG_OR | RT_EVENT_FLAG_CLEAR, RT_WAITING_FOREVER, RT_NULL);
+    // session.event = rt_event_create("vt_event", RT_IPC_FLAG_FIFO);
+    // #define KEY_MID (13)
+    // rt_pin_mode(KEY_MID, PIN_MODE_INPUT_PULLUP);
+    // while (1)
+    // {
+    //     if (rt_pin_read(KEY_MID) == PIN_LOW)
+    //     {
+    //         rt_thread_delay(80);
+    //         if (rt_pin_read(KEY_MID) == PIN_LOW)
+    //         {
+    //             LOG_I("KEY_MID is pressed");
+    //             LOG_I("正在开启摄像头...");
+    //             camera_start(); //开启摄像头传输照片
+    //             tvideo_capture(1);
+    //             rt_event_recv(session.event, SEND_FRAME_EVENT, RT_EVENT_FLAG_OR | RT_EVENT_FLAG_CLEAR, RT_WAITING_FOREVER, RT_NULL);
 
-                int fd, res;
-                rt_sprintf(file_name, "/sd/temp.jpg", file_count);
-                LOG_I("name = %s \n", file_name);
-                fd = open(file_name, O_WRONLY | O_CREAT);
-                if (fd >= 0)
-                {
-                    write(fd, session.buf, session.total_len);
-                    LOG_I("session.total_len=%d\r\n", session.total_len);
-                    close(fd);
-                    LOG_I("save %s ok!!!\n", file_name);
-                    rt_sem_release(sem_base64);
-                    res = Decode_Jpg(file_name);
-                    LOG_I("res = %d\n", res);
-                }
-                else
-                {
-                    LOG_E("save pic failed!!!\n");
-                }
-                tvideo_capture(0);
-            }
-        }
-    }
+    //             int fd, res;
+    //             rt_sprintf(file_name, "/sd/temp.jpg", file_count);
+    //             LOG_I("name = %s \n", file_name);
+    //             fd = open(file_name, O_WRONLY | O_CREAT);
+    //             if (fd >= 0)
+    //             {
+    //                 write(fd, session.buf, session.total_len);
+    //                 LOG_I("session.total_len=%d\r\n", session.total_len);
+    //                 close(fd);
+    //                 LOG_I("save %s ok!!!\n", file_name);
+    //                 rt_sem_release(sem_base64);
+    //                 res = Decode_Jpg(file_name);
+    //                 LOG_I("res = %d\n", res);
+    //             }
+    //             else
+    //             {
+    //                 LOG_E("save pic failed!!!\n");
+    //             }
+    //             tvideo_capture(0);
+    //         }
+    //     }
+    // }
     return 0;
 }
 MSH_CMD_EXPORT(key_photo, key photo);
@@ -429,76 +534,75 @@ int play_test(int argc, char **argv)
     player_set_uri(uri);
     LOG_I("开始播放");
     player_play();
-    
-    return 0;
-}
-MSH_CMD_EXPORT(play_test,play_test);
-
-
-int urllencode_test(int argc, char *argv[])
-{
-    char *src = argv[1];
-    unsigned int srclength = strlen(src);
-    rt_kprintf("src length: %d\n", strlen(src));
-
-    char obj[100] = {0};
-    URLEncode(src, srclength, obj, 100);
-
-    rt_kprintf("obj: %s\n", obj);
-    rt_kprintf("obj: %d\n", strlen(obj));
 
     return 0;
 }
-MSH_CMD_EXPORT(urllencode_test, urllencode_test);
+MSH_CMD_EXPORT(play_test, play_test);
 
-int cJSON_test(int argc, char **argv)
-{
-    cJSON *root = RT_NULL;
+// int urllencode_test(int argc, char *argv[])
+// {
+//     char *src = argv[1];
+//     unsigned int srclength = strlen(src);
+//     rt_kprintf("src length: %d\n", strlen(src));
 
-    root = cJSON_Parse("{\"code\":200,\"msg\":\"success\",\"newslist\":[{\"name\":\"键盘\",\"trust\":62,\"lajitype\":0,\"lajitip\":\"键盘是可回收垃圾，常见包括各类废金属、玻璃瓶、饮料瓶、电子产品等。投放时应注意轻投轻放、清洁干燥、避免污染。\"},{\"name\":\"笔记本电脑\",\"trust\":44,\"lajitype\":0,\"lajitip\":\"笔记本电脑是可回收垃圾，常见包括各类废金属、玻璃瓶、饮料瓶、电子产品等。投放时应注意轻投轻放、清洁干燥、避免污染。\"},{\"name\":\"笔记本\",\"trust\":28,\"lajitype\":0,\"lajitip\":\"笔记本是可回收垃圾，常见包括各类废金属、玻璃瓶、饮料瓶、电子产品等。投放时应注意轻投轻放、清洁干燥、避免污染。\"},{\"name\":\"触控板\",\"trust\":14,\"lajitype\":4,\"lajitip\":\"触控板的垃圾分类系统暂时无法判别，请重新尝试拍摄物体的主要特征。\"},{\"name\":\"台式电脑\",\"trust\":0,\"lajitype\":0,\"lajitip\":\"台式电脑是可回收垃圾，常见包括各类废金属、玻璃瓶、饮料瓶、电子产品等。投放时应注意轻投轻放、清洁干燥、避免污染。\"}]}");
-    if (RT_NULL == root)
-    {
-        LOG_E("cJSON_Parse Failed!\r\n");
-    }
-    cJSON *code_json = cJSON_GetObjectItem(root, "code");
-    if (RT_NULL != code_json)
-    {
-        char *code = cJSON_Print(code_json);
-        printf("code:%s\n", code);
-        free(code);
-    }
-    cJSON *newslist = cJSON_GetObjectItem(root, "newslist");
-    int array_size = cJSON_GetArraySize(newslist);
-    for (int i = 0; i < array_size; i++)
-    {
-        cJSON *object = cJSON_GetArrayItem(newslist, i);
-        cJSON *name_json = cJSON_GetObjectItem(object, "name");
-        cJSON *type_json = cJSON_GetObjectItem(object, "lajitype");
-        cJSON *tip_json = cJSON_GetObjectItem(object, "lajitip");
-        if (name_json != RT_NULL)
-        {
-            char *name = cJSON_Print(name_json);
-            rt_kprintf("name:%s\r\n", name);
-            free(name);
-        }
+//     char obj[100] = {0};
+//     URLEncode(src, srclength, obj, 100);
 
-        if (type_json != RT_NULL)
-        {
-            char *type = cJSON_Print(type_json);
-            rt_kprintf("type:%s\r\n", type);
-            free(type);
-        }
+//     rt_kprintf("obj: %s\n", obj);
+//     rt_kprintf("obj: %d\n", strlen(obj));
 
-        if (tip_json != RT_NULL)
-        {
-            char *tip = cJSON_Print(tip_json);
-            rt_kprintf("tip:%s\r\n", tip);
-            free(tip);
-        }
-    }
-    cJSON_Delete(root);
-}
-MSH_CMD_EXPORT(cJSON_test, cJSON test);
+//     return 0;
+// }
+// MSH_CMD_EXPORT(urllencode_test, urllencode_test);
+
+// int cJSON_test(int argc, char **argv)
+// {
+//     cJSON *root = RT_NULL;
+
+//     root = cJSON_Parse("{\"code\":200,\"msg\":\"success\",\"newslist\":[{\"name\":\"键盘\",\"trust\":62,\"lajitype\":0,\"lajitip\":\"键盘是可回收垃圾，常见包括各类废金属、玻璃瓶、饮料瓶、电子产品等。投放时应注意轻投轻放、清洁干燥、避免污染。\"},{\"name\":\"笔记本电脑\",\"trust\":44,\"lajitype\":0,\"lajitip\":\"笔记本电脑是可回收垃圾，常见包括各类废金属、玻璃瓶、饮料瓶、电子产品等。投放时应注意轻投轻放、清洁干燥、避免污染。\"},{\"name\":\"笔记本\",\"trust\":28,\"lajitype\":0,\"lajitip\":\"笔记本是可回收垃圾，常见包括各类废金属、玻璃瓶、饮料瓶、电子产品等。投放时应注意轻投轻放、清洁干燥、避免污染。\"},{\"name\":\"触控板\",\"trust\":14,\"lajitype\":4,\"lajitip\":\"触控板的垃圾分类系统暂时无法判别，请重新尝试拍摄物体的主要特征。\"},{\"name\":\"台式电脑\",\"trust\":0,\"lajitype\":0,\"lajitip\":\"台式电脑是可回收垃圾，常见包括各类废金属、玻璃瓶、饮料瓶、电子产品等。投放时应注意轻投轻放、清洁干燥、避免污染。\"}]}");
+//     if (RT_NULL == root)
+//     {
+//         LOG_E("cJSON_Parse Failed!\r\n");
+//     }
+//     cJSON *code_json = cJSON_GetObjectItem(root, "code");
+//     if (RT_NULL != code_json)
+//     {
+//         char *code = cJSON_Print(code_json);
+//         printf("code:%s\n", code);
+//         free(code);
+//     }
+//     cJSON *newslist = cJSON_GetObjectItem(root, "newslist");
+//     int array_size = cJSON_GetArraySize(newslist);
+//     for (int i = 0; i < array_size; i++)
+//     {
+//         cJSON *object = cJSON_GetArrayItem(newslist, i);
+//         cJSON *name_json = cJSON_GetObjectItem(object, "name");
+//         cJSON *type_json = cJSON_GetObjectItem(object, "lajitype");
+//         cJSON *tip_json = cJSON_GetObjectItem(object, "lajitip");
+//         if (name_json != RT_NULL)
+//         {
+//             char *name = cJSON_Print(name_json);
+//             rt_kprintf("name:%s\r\n", name);
+//             free(name);
+//         }
+
+//         if (type_json != RT_NULL)
+//         {
+//             char *type = cJSON_Print(type_json);
+//             rt_kprintf("type:%s\r\n", type);
+//             free(type);
+//         }
+
+//         if (tip_json != RT_NULL)
+//         {
+//             char *tip = cJSON_Print(tip_json);
+//             rt_kprintf("tip:%s\r\n", tip);
+//             free(tip);
+//         }
+//     }
+//     cJSON_Delete(root);
+// }
+// MSH_CMD_EXPORT(cJSON_test, cJSON test);
 
 int tts_test(int argc, char **argv)
 {
@@ -529,119 +633,35 @@ int tts_test(int argc, char **argv)
 }
 MSH_CMD_EXPORT(tts_test, tts test);
 
-int base64_test(int argc, char **argv)
-{
-    char *uri = RT_NULL;
-    uri = web_strdup("http://api.tianapi.com/txapi/imglajifenlei/index");
-    if (uri == RT_NULL)
-    {
-        rt_kprintf("no memory for create post request uri buffer.\n");
-        return -RT_ENOMEM;
-    }
+// int base64_test(int argc, char **argv)
+// {
+//     char *uri = RT_NULL;
+//     uri = web_strdup("http://api.tianapi.com/txapi/imglajifenlei/index");
+//     if (uri == RT_NULL)
+//     {
+//         rt_kprintf("no memory for create post request uri buffer.\n");
+//         return -RT_ENOMEM;
+//     }
 
-    unsigned char *dst = (unsigned char *)rt_malloc(sizeof(unsigned char) * 1024 * 40);
-    photo2base64(argv[1], dst);
+//     unsigned char *dst = (unsigned char *)rt_malloc(sizeof(unsigned char) * 1024 * 40);
+//     photo2base64(argv[1], dst);
 
-    unsigned char *buffer = (unsigned char *)rt_malloc(sizeof(unsigned char) * 1024 * 40);
-    rt_sprintf(buffer, "img=data:image/jpg;base64,%s", dst);
-    memset(dst, 0, rt_strlen(dst));
-    URLEncode(buffer, rt_strlen(buffer), dst, 1024 * 40);
-    memset(buffer, 0, rt_strlen(buffer));
-    rt_sprintf(buffer, "key=acda67d9ac820ea200a26f73d0b41adf&img=%s", dst);
-    webclient_post_comm(uri, buffer);
+//     unsigned char *buffer = (unsigned char *)rt_malloc(sizeof(unsigned char) * 1024 * 40);
+//     rt_sprintf(buffer, "img=data:image/jpg;base64,%s", dst);
+//     memset(dst, 0, rt_strlen(dst));
+//     URLEncode(buffer, rt_strlen(buffer), dst, 1024 * 40);
+//     memset(buffer, 0, rt_strlen(buffer));
+//     rt_sprintf(buffer, "key=acda67d9ac820ea200a26f73d0b41adf&img=%s", dst);
+//     char *res = (unsigned char *)rt_malloc(4096);
+//     webclient_post_comm(uri, buffer, res);
+    
+//     rt_kprintf(res);
+//     rt_free(res);
 
-    web_free(uri);
-    rt_free(dst);
-    rt_free(buffer);
-}
-MSH_CMD_EXPORT(base64_test, base64);
+//     web_free(uri);
+//     rt_free(dst);
+//     rt_free(buffer);
+// }
+// MSH_CMD_EXPORT(base64_test, base64);
 
-/* send HTTP POST request by common request interface, it used to receive longer data */
-static int post(const char *uri, const char *post_data)
-{
-    struct webclient_session *session = RT_NULL;
-    unsigned char *buffer = RT_NULL;
-    int index, ret = 0;
-    int bytes_read, resp_status;
 
-    buffer = (unsigned char *)web_malloc(POST_RESP_BUFSZ);
-    if (buffer == RT_NULL)
-    {
-        rt_kprintf("no memory for receive response buffer.\n");
-        ret = -RT_ENOMEM;
-        goto __exit;
-    }
-
-    /* create webclient session and set header response size */
-    session = webclient_session_create(POST_HEADER_BUFSZ);
-    if (session == RT_NULL)
-    {
-        ret = -RT_ENOMEM;
-        goto __exit;
-    }
-
-    /* build header for upload */
-    webclient_header_fields_add(session, "Authorization: APPCODE 91fc0ae1f57341a3bc63e43e84b414ef\r\n");
-    webclient_header_fields_add(session, "Content-Type: application/x-www-form-urlencoded; charset=UTF-8\r\n");
-
-    /* send POST request by default header */
-    if ((resp_status = webclient_post(session, uri, post_data)) != 200)
-    {
-        rt_kprintf("webclient POST request failed, response(%d) error.\n", resp_status);
-        ret = -RT_ERROR;
-        goto __exit;
-    }
-
-    rt_kprintf("webclient post response data: \n");
-    do
-    {
-        bytes_read = webclient_read(session, buffer, POST_RESP_BUFSZ);
-        if (bytes_read <= 0)
-        {
-            break;
-        }
-
-        for (index = 0; index < bytes_read; index++)
-        {
-            rt_kprintf("%c", buffer[index]);
-        }
-    } while (1);
-
-    rt_kprintf("\n");
-
-__exit:
-    if (session)
-    {
-        webclient_close(session);
-    }
-
-    if (buffer)
-    {
-        web_free(buffer);
-    }
-
-    return ret;
-}
-
-int get_garbage_info()
-{
-#define GARBAGE_API "http://recover.market.alicloudapi.com/recover"
-    const char *payload = "img=aHR0cHM6Ly9pbWcxNC4zNjBidXlpbWcuY29tL24wL2pmcy90NjQyMS8zMS8xNzk1Nzc5NS8xODAzNTUvYzU0ZjEyZGEvNTkzN2Q2ZGJOYTAxNTI0MjQuanBn";
-    char *uri = RT_NULL;
-    uri = web_strdup(GARBAGE_API);
-    if (uri == RT_NULL)
-    {
-        rt_kprintf("no memory for create post request uri buffer.\n");
-        return -RT_ENOMEM;
-    }
-
-    post(uri, payload);
-
-    if (uri)
-    {
-        web_free(uri);
-    }
-
-    return RT_EOK;
-}
-MSH_CMD_EXPORT(get_garbage_info, get_garbage_info);

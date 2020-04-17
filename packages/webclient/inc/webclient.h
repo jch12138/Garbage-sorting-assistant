@@ -133,7 +133,7 @@ int webclient_resp_status_get(struct webclient_session *session);
 int webclient_content_length_get(struct webclient_session *session);
 
 
-char *webclient_post_comm(const char *uri, const char *post_data);
+int webclient_post_comm(const char *uri, const char *post_data,char *buffer);
 
 
 
