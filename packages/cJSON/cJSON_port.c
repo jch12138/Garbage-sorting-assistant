@@ -10,8 +10,8 @@ int cJSON_hook_init(void)
 {
     cJSON_Hooks cJSON_hook;
 
-    cJSON_hook.malloc_fn = (void *(*)(size_t sz))rt_malloc;
-    cJSON_hook.free_fn = rt_free;
+    cJSON_hook.malloc_fn = (void *(*)(size_t sz))tcm_malloc;
+    cJSON_hook.free_fn = tcm_free;
 
     cJSON_InitHooks(&cJSON_hook);
 

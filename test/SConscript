@@ -10,7 +10,7 @@ if GetDepend('RT_USING_I2C') == False:
     SrcRemove(src, 'test_i2c.c')
     SrcRemove(src, 'test_i2c2.c')
 
-group = DefineGroup('test', src, depend = [''])
+group = DefineGroup('test', src, depend = ['RT_USING_TEST'])
 
 Return('group')
 
