@@ -192,7 +192,6 @@ int URLEncode(const char *str, const int strSize, char *result, const int result
 int tts(char *path)
 {
     char *uri = rt_strdup(path);
-    player_set_volume(99);
     player_stop();
     player_set_uri(uri);
     LOG_I("开始播放");

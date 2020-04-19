@@ -4,7 +4,8 @@
 #include <dfs_posix.h>
 //添加 lcd 显示使用的头文件
 #include "drv_lcd.h"
-#include "ascii.h"
+#include "test/ascii.h"
+#include "myfunc.h"
 
 #if defined RT_USING_LCD_TEST
 #define macWIDTH_EN_CHAR 8   //英文字符宽度

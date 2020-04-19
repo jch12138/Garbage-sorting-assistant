@@ -61,3 +61,4 @@ int print_long(char *buffer, int len);
 //int photo2base64(const char *path, unsigned char *dst);
 int photo2base64(char *buffer, unsigned char *dst);
 void get_ip(char* buf);
+void lcd_disp_str_ch(uint16_t usX, uint16_t usY, const uint8_t *pStr, uint16_t usColor_Background, uint16_t usColor_Foreground);

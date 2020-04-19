@@ -1,5 +1,6 @@
 #include "usermain.h"
 #include "myfunc.h"
+#include "drv_lcd.h"
 
 /* 开启DEBUG功能 */
 #define DBG_ENABLE
@@ -10,15 +11,11 @@
 #include <rtdbg.h>
 
 static rt_sem_t sem_request = RT_NULL;
-static struct rt_event event ;
-
-#define NETWORKERROR    (1<<0)
-#define SORTING         (1<<1)
-#define COMPLETE        (1<<2)
-
+extern unsigned char image_rttlogo[];
 /* 拍照线程入口 */
 static void camera_entry(void *parameter)
 {   
+    //tts("/sd/welcome.mp3");
     char file_name[15] = {0};
     int file_count = 0;
     session.event = rt_event_create("vt_event", RT_IPC_FLAG_FIFO); 
@@ -38,6 +35,8 @@ static void camera_entry(void *parameter)
                 rt_sem_release(sem_request);
                 LOG_I("已釋放信號量");
 
+                tts("/sd/sorting.mp3");
+
                 int fd, res;
                 rt_sprintf(file_name, "/sd/temp.jpg", file_count);
                 LOG_I("name = %s \n", file_name);
@@ -50,7 +49,7 @@ static void camera_entry(void *parameter)
                     LOG_I("save %s ok!!!\n", file_name);
                     res = Decode_Jpg(file_name);
 
-                    rt_event_send(&event, SORTING);
+                   
 
                     LOG_I("res = %d\n", res);
                 }
@@ -104,7 +103,7 @@ static void request_entry(void *parameter)
             if (RT_NULL == root)
             {
                 LOG_E("cJSON_Parse Failed!\r\n");
-                rt_event_send(&event, NETWORKERROR);
+                tts("/sd/net_error.mp3");
                 continue;
             }
 
@@ -116,7 +115,7 @@ static void request_entry(void *parameter)
                 if(rt_strcmp(code,"200") != 0)
                 {
                     LOG_E("网络错误");
-                    rt_event_send(&event, NETWORKERROR);
+                    tts("/sd/net_error.mp3");
                     continue;
                 }
                 free(code);
@@ -131,9 +130,9 @@ static void request_entry(void *parameter)
                 char *tip = cJSON_Print(tip_json);
                 if(text2audio(tip) != 0)
                 {
-                    rt_event_send(&event, NETWORKERROR);
+                    tts("/sd/net_error.mp3");
                 }
-                rt_event_send(&event, COMPLETE);
+                tts("/sd/audio.mp3");
                 free(tip);
             }
             else
@@ -152,45 +151,18 @@ static void request_entry(void *parameter)
     }
 }
 
-static void player_entry(void *parameter)
-{  
-    rt_uint32_t e;
-    
-    while(1)
-    {
-        if(rt_event_recv(&event,
-                        (SORTING|COMPLETE|NETWORKERROR),
-                        RT_EVENT_FLAG_OR | RT_EVENT_FLAG_CLEAR,
-                        RT_WAITING_FOREVER,
-                        &e)==RT_EOK)
-        {
-            LOG_I("event:%d",e);
-
-            if(e == SORTING)
-            {
-                tts("/sd/loading.mp3");
-            }
-            if(e == NETWORKERROR)
-            {
-                tts("/sd/net_error.mp3");
-            }
-            if(e == COMPLETE)
-            {
-                tts("/sd/audio.mp3");
-            }
-        }
-        
-        rt_thread_mdelay(50);
-    }
-
-}
-
 /* 创建用户应用线程 */
 int user_app_start()
 {
+    player_set_volume(99);
+    tts("/sd/welcome.mp3");
+    lcd_clear(WHITE);
+    lcd_show_image(0, 0, 240, 69, image_rttlogo);
+    lcd_disp_str_en(20,100,"Garbage-sorting-assistant",WHITE,BLACK);
     int result=0;
     LOG_I("准备运行用户程序!");
     wlan_connect();
+    
     rt_thread_delay(4000);
     rt_pin_mode(KEY_MID, PIN_MODE_INPUT_PULLUP);
 
@@ -200,27 +172,18 @@ int user_app_start()
         LOG_E("信号量创建失败!");
     }
 
-    result = rt_event_init(&event,"player_event",RT_IPC_FLAG_FIFO);
-    if(result != RT_EOK)
-    {
-        LOG_E("事件集创建失败!");
-    }
     rt_thread_t tid1 = rt_thread_create("camera", camera_entry, RT_NULL, 1200, 1, 20);
     if (tid1 != RT_NULL)
     {
         rt_thread_startup(tid1);
         LOG_I("拍照线程已启动!");
     }
-    rt_thread_t tid2 = rt_thread_create("request", request_entry, RT_NULL, 1200, 1, 20);
+    rt_thread_t tid2 = rt_thread_create("request", request_entry, RT_NULL, 4096, 0, 50);
     if (tid2 != RT_NULL)
     {
         rt_thread_startup(tid2);
         LOG_I("网络线程已启动!");
     }
-    rt_thread_t tid3 = rt_thread_create("player",player_entry,RT_NULL,1024,1,20);
-    if(tid3 != RT_NULL)
-    {
-        rt_thread_startup(tid3);
-        LOG_I("音频播放线程已启动!\r\n");
-    }
+    lcd_disp_str_en(80, 150, "Ready!",WHITE,GREEN);
+
 }

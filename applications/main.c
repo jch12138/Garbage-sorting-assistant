@@ -169,6 +169,8 @@ int main(int argc, char **argv)
 	player_system_init();
     audio_device_mic_open(); /*open mic device */
 
+    user_app_start();
+    
     #if ((CFG_USE_APP_DEMO_VIDEO_TRANSFER) || (CFG_SUPPORT_TIANZHIHENG_DRONE))
     // user_main(NULL);
     #endif
@@ -200,7 +202,7 @@ static int wlan_app_init(void)
 		rt_kprintf("Enter normal mode...\r\n\r\n");
 		app_start();
 
-		user_app_start();
+		
 	}
 
 	return 0;
